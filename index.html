@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OPERATOR // Web App Recon &amp; Pentest Checklist</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{
+  --bg:#05070a;
+  --bg2:#0a0f0c;
+  --panel:#0c1210;
+  --panel2:#0f1815;
+  --line:#1c2b22;
+  --green:#3cff8a;
+  --green-dim:#1d8f52;
+  --green-bright:#7dffb0;
+  --amber:#ffb454;
+  --red:#ff5c5c;
+  --text:#cfe9d8;
+  --text-dim:#7f9a8a;
+  --font-display:'Chakra Petch','Segoe UI',sans-serif;
+  --font-mono:'JetBrains Mono','Consolas',monospace;
+  --radius:6px;
+}
+[data-theme="light"]{
+  --bg:#eef3ee;
+  --bg2:#e5ece4;
+  --panel:#ffffff;
+  --panel2:#f4f8f4;
+  --line:#cddccf;
+  --green:#0f8a44;
+  --green-dim:#0a6a33;
+  --green-bright:#0c7a3c;
+  --amber:#a8650f;
+  --red:#c73434;
+  --text:#12241a;
+  --text-dim:#4b6156;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--font-mono);height:100%;}
+body{min-height:100vh;position:relative;overflow-x:hidden;}
+#matrixCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:0.16;pointer-events:none;}
+[data-theme="light"] #matrixCanvas{opacity:0.06;}
+.scanline{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(to bottom, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 2px, transparent 3px);mix-blend-mode:overlay;}
+
+.app{position:relative;z-index:2;max-width:1240px;margin:0 auto;padding:22px 20px 80px;}
+
+/* HEADER */
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px;flex-wrap:wrap;}
+.brand{display:flex;flex-direction:column;gap:4px;}
+.brand .eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:0.35em;color:var(--green-dim);text-transform:uppercase;}
+.brand h1{font-family:var(--font-display);font-size:30px;margin:0;letter-spacing:0.02em;color:var(--green-bright);text-shadow:0 0 14px rgba(60,255,138,0.25);}
+[data-theme="light"] .brand h1{text-shadow:none;}
+.brand .sub{color:var(--text-dim);font-size:12.5px;max-width:560px;}
+.topctrls{display:flex;align-items:center;gap:10px;}
+.themeToggle{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:var(--radius);cursor:pointer;font-family:var(--font-mono);font-size:12px;letter-spacing:0.05em;display:flex;align-items:center;gap:8px;}
+.themeToggle:hover{border-color:var(--green-dim);}
+
+/* GLOBAL PROGRESS */
+.globalbar{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.gp-track{flex:1;height:10px;background:var(--panel2);border:1px solid var(--line);border-radius:20px;overflow:hidden;}
+.gp-fill{height:100%;background:linear-gradient(90deg,var(--green-dim),var(--green));transition:width .3s ease;}
+.gp-label{font-size:12px;color:var(--text-dim);white-space:nowrap;}
+.gp-count{color:var(--green-bright);font-weight:600;}
+
+/* PROJECT TABS */
+.projectbar{display:flex;align-items:center;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
+.ptab{padding:8px 14px;border:1px solid var(--line);border-radius:var(--radius) var(--radius) 0 0;background:var(--panel2);color:var(--text-dim);font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;position:relative;}
+.ptab.active{background:var(--panel);color:var(--green-bright);border-color:var(--green-dim);border-bottom:2px solid var(--green);}
+.ptab .pdot{width:6px;height:6px;border-radius:50%;background:var(--line);}
+.ptab.active .pdot{background:var(--green);box-shadow:0 0 6px var(--green);}
+.ptab .del{opacity:0;font-size:11px;color:var(--red);margin-left:4px;}
+.ptab:hover .del{opacity:0.8;}
+.addProjectBtn{padding:8px 12px;border:1px dashed var(--line);border-radius:var(--radius);background:transparent;color:var(--text-dim);cursor:pointer;font-size:13px;}
+.addProjectBtn:hover{color:var(--green-bright);border-color:var(--green-dim);}
+
+/* CATEGORY NAV */
+.catnav{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.catbtn{border:1px solid var(--line);background:var(--panel);padding:14px 12px;border-radius:var(--radius);cursor:pointer;text-align:left;position:relative;overflow:hidden;transition:border-color .15s ease;}
+.catbtn:hover{border-color:var(--green-dim);}
+.catbtn.active{border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset;}
+.catbtn .cnum{font-size:10px;letter-spacing:.2em;color:var(--text-dim);}
+.catbtn .cname{font-family:var(--font-display);font-size:16px;color:var(--text);margin-top:2px;}
+.catbtn.active .cname{color:var(--green-bright);}
+.catbtn .cprog{margin-top:8px;height:5px;background:var(--panel2);border-radius:6px;overflow:hidden;}
+.catbtn .cprog i{display:block;height:100%;background:var(--green);}
+.catbtn .cmeta{margin-top:6px;font-size:10.5px;color:var(--text-dim);}
+
+/* TOOLBAR: search + filter */
+.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.toolbar input[type=text]{flex:1;min-width:220px;background:var(--panel);border:1px solid var(--line);color:var(--text);padding:9px 12px;border-radius:var(--radius);font-family:var(--font-mono);font-size:13px;}
+.toolbar input[type=text]:focus{outline:none;border-color:var(--green-dim);}
+.filterchip{border:1px solid var(--line);background:var(--panel);color:var(--text-dim);padding:8px 12px;border-radius:20px;font-size:11.5px;cursor:pointer;}
+.filterchip.active{color:var(--green-bright);border-color:var(--green-dim);}
+.smallbtn{border:1px solid var(--line);background:var(--panel);color:var(--text-dim);padding:8px 12px;border-radius:var(--radius);font-size:11.5px;cursor:pointer;}
+.smallbtn:hover{color:var(--green-bright);border-color:var(--green-dim);}
+
+/* SECTION / ITEMS */
+.section{margin-bottom:26px;}
+.section h2{font-family:var(--font-display);font-size:15px;color:var(--green-bright);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px dashed var(--line);padding-bottom:8px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;}
+.section h2 span.tag{font-family:var(--font-mono);color:var(--text-dim);font-size:11px;text-transform:none;letter-spacing:0;}
+
+.item{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;}
+.item.done{border-color:var(--green-dim);}
+.item-head{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;cursor:pointer;}
+.chk{margin-top:2px;width:18px;height:18px;flex:none;accent-color:var(--green);cursor:pointer;}
+.item-title-wrap{flex:1;min-width:0;}
+.item-title{font-family:var(--font-display);font-size:14.5px;color:var(--text);}
+.item.done .item-title{color:var(--green-bright);text-decoration:line-through;text-decoration-color:var(--green-dim);}
+.item-desc{font-size:12px;color:var(--text-dim);margin-top:3px;line-height:1.5;}
+.item-badges{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.badge{font-size:9.5px;letter-spacing:.05em;padding:2px 7px;border-radius:10px;border:1px solid var(--line);color:var(--text-dim);text-transform:uppercase;}
+.badge.sev-high{color:var(--red);border-color:var(--red);}
+.badge.sev-med{color:var(--amber);border-color:var(--amber);}
+.badge.sev-low{color:var(--green);border-color:var(--green-dim);}
+.expandBtn{flex:none;background:none;border:1px solid var(--line);color:var(--text-dim);border-radius:4px;width:26px;height:26px;cursor:pointer;font-size:13px;}
+.expandBtn:hover{color:var(--green-bright);}
+.item-body{max-height:0;overflow:hidden;transition:max-height .25s ease;background:var(--panel2);}
+.item.open .item-body{max-height:600px;}
+.item-body-inner{padding:0 14px 14px 44px;font-size:12.5px;color:var(--text-dim);}
+.item-body-inner .lbl{color:var(--green-dim);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:10px;display:block;}
+.item-body-inner code{background:var(--bg);border:1px solid var(--line);color:var(--green);padding:1px 5px;border-radius:3px;font-size:11.5px;}
+.item-body-inner pre{background:var(--bg);border:1px solid var(--line);color:var(--green);padding:8px 10px;border-radius:4px;font-size:11.5px;overflow-x:auto;white-space:pre-wrap;margin:6px 0 0;}
+textarea.note{width:100%;margin-top:8px;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:4px;padding:8px;font-family:var(--font-mono);font-size:12px;resize:vertical;min-height:44px;}
+
+footer.appfoot{text-align:center;color:var(--text-dim);font-size:11px;margin-top:30px;letter-spacing:.05em;}
+.emptystate{color:var(--text-dim);font-size:12.5px;text-align:center;padding:30px 0;}
+
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+</style>
+</head>
+<body data-theme="dark">
+<canvas id="matrixCanvas"></canvas>
+<div class="scanline"></div>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="eyebrow">// authorized_testing_only</div>
+      <h1>OPERATOR</h1>
+      <div class="sub">Web application recon &amp; pentest checklist — one page, per‑engagement tabs, mark items off as you clear them. For use in scopes you're authorized to test.</div>
+    </div>
+    <div class="topctrls">
+      <button class="themeToggle" id="themeBtn">◐ <span id="themeLabel">Dark / Matrix</span></button>
+    </div>
+  </header>
+
+  <div class="globalbar">
+    <div class="gp-track"><div class="gp-fill" id="globalFill" style="width:0%"></div></div>
+    <div class="gp-label"><span class="gp-count" id="globalCount">0/0</span> checks cleared</div>
+  </div>
+
+  <div class="projectbar" id="projectBar"></div>
+
+  <div class="catnav" id="catNav"></div>
+
+  <div class="toolbar">
+    <input type="text" id="searchBox" placeholder="Filter checks... e.g. jwt, host header, upload">
+    <button class="filterchip active" data-filter="all">All</button>
+    <button class="filterchip" data-filter="open">Open</button>
+    <button class="filterchip" data-filter="done">Done</button>
+    <button class="smallbtn" id="exportBtn">⇩ Export JSON</button>
+    <button class="smallbtn" id="resetBtn">⟲ Reset category</button>
+  </div>
+
+  <div id="content"></div>
+
+  <footer class="appfoot">OPERATOR CHECKLIST · local per-project state · data stays in this browser session/storage · not a substitute for engagement scope &amp; rules of engagement</footer>
+</div>
+
+<script>
+/* =========================================================
+   MATRIX RAIN BACKGROUND
+========================================================= */
+(function(){
+  const canvas = document.getElementById('matrixCanvas');
+  const ctx = canvas.getContext('2d');
+  let w,h,cols,drops;
+  const chars = "アイウエオカキクケコサシスセソ0123456789ABCDEF$#@!<>/\\{}[]=+*";
+  function resize(){
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    cols = Math.floor(w/16);
+    drops = new Array(cols).fill(0).map(()=>Math.random()*-100);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+  function draw(){
+    const theme = document.body.getAttribute('data-theme');
+    ctx.fillStyle = theme==='light' ? 'rgba(238,243,238,0.18)' : 'rgba(5,7,10,0.10)';
+    ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = theme==='light' ? '#0f8a44' : '#3cff8a';
+    ctx.font = '14px monospace';
+    for(let i=0;i<cols;i++){
+      const text = chars[Math.floor(Math.random()*chars.length)];
+      ctx.fillText(text, i*16, drops[i]*16);
+      if(drops[i]*16 > h && Math.random() > 0.975) drops[i]=0;
+      drops[i]++;
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* =========================================================
+   THEME TOGGLE
+========================================================= */
+const themeBtn = document.getElementById('themeBtn');
+const themeLabel = document.getElementById('themeLabel');
+themeBtn.addEventListener('click', ()=>{
+  const cur = document.body.getAttribute('data-theme');
+  const next = cur==='dark' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', next);
+  themeLabel.textContent = next==='dark' ? 'Dark / Matrix' : 'Light / Daylight';
+});
+
+/* =========================================================
+   CHECKLIST DATA
+========================================================= */
+const CATEGORIES = [
+{
+  id:'recon', name:'Recon', num:'01',
+  sections:[
+    {name:'Passive & Source-Level Recon', items:[
+      {t:'View Page Source', d:'Read raw HTML for comments, hidden fields, dev notes, internal paths, JS file references.', u:'Ctrl+U on any page. Search the source for "TODO", "api", "key", "debug", commented-out login forms, or hidden <input type="hidden"> fields carrying IDs/roles.', sev:'low'},
+      {t:'Technology fingerprinting (Wappalyzer / WhatWeb / BuiltWith)', d:'Identify CMS, frameworks, JS libraries, server software and versions to map known CVEs.', u:'Run the Wappalyzer browser extension or `whatweb https://target.com`. If it reports WordPress 5.4, cross-check known plugin/core CVEs before testing.', sev:'low'},
+      {t:'robots.txt & sitemap.xml', d:'Disclosed disallowed paths often point to admin panels, staging areas, or backup dirs.', u:'`curl https://target.com/robots.txt` — a `Disallow: /admin-panel/` line is a direct hint of where to look next.', sev:'low'},
+      {t:'security.txt', d:'Reveals disclosure contacts, sometimes bug bounty scope and PGP keys.', u:'`curl https://target.com/.well-known/security.txt`', sev:'low'},
+      {t:'HTTP response headers', d:'Server, X-Powered-By, X-AspNet-Version and similar headers leak stack details.', u:'`curl -I https://target.com` — "X-Powered-By: PHP/7.2.1" narrows the CVE search immediately.', sev:'low'},
+      {t:'Favicon hash fingerprinting', d:'Many apps reuse default favicons; hash them and search Shodan to fingerprint the framework/product across the internet.', u:'Compute the MurmurHash3 of the favicon and search `http.favicon.hash:<hash>` on Shodan to find identical deployments.', sev:'low'},
+      {t:'Error page / stack trace fingerprinting', d:'Force a 404/500 and inspect for verbose stack traces revealing framework, file paths, DB type.', u:'Request a non-existent route like `/asdf1234` or malform a parameter to trigger a 500 and read the returned trace.', sev:'med'},
+    ]},
+    {name:'DNS, Subdomains & Infrastructure', items:[
+      {t:'WHOIS & DNS records', d:'Registrar, name servers, MX/TXT records can reveal related infra and third-party services in use (SPF/DKIM hints, SaaS providers).', u:'`whois target.com` and `dig target.com ANY`', sev:'low'},
+      {t:'Subdomain enumeration', d:'Wider attack surface: staging, dev, internal tools often sit on subdomains with weaker controls.', u:'`subfinder -d target.com | httpx -silent` or check `crt.sh/?q=%25.target.com` for certificate-transparency logged names.', sev:'med'},
+      {t:'Certificate transparency / SSL cert SANs', d:'TLS certs list all covered hostnames, exposing subdomains not otherwise indexed.', u:'`openssl s_client -connect target.com:443 | openssl x509 -noout -text` and look at Subject Alternative Names.', sev:'low'},
+      {t:'Cloud storage bucket discovery', d:'Misconfigured S3/Azure/GCS buckets tied to the app can expose backups, source, or PII.', u:'Try `https://target-assets.s3.amazonaws.com` style guesses, or run a bucket-finder tool against likely naming patterns seen in JS files.', sev:'high'},
+      {t:'Port scan & service enumeration', d:'Identify exposed services beyond 80/443 (admin consoles, DBs, RDP).', u:'`nmap -sV -p- target.com` (only within authorized scope/IP ranges).', sev:'med'},
+    ]},
+    {name:'Content Discovery & OSINT', items:[
+      {t:'Directory / file brute-forcing', d:'Find hidden endpoints, backup files, admin panels not linked from the UI.', u:'`ffuf -u https://target.com/FUZZ -w wordlist.txt -mc 200,301,302,403`', sev:'med'},
+      {t:'Google / Bing dorking', d:'Search engines index leaked docs, login panels, and error pages.', u:'`site:target.com filetype:pdf`, `site:target.com inurl:admin`, `site:target.com "index of /"`', sev:'low'},
+      {t:'Wayback Machine / historical URLs', d:'Old, forgotten but still-live endpoints (v1 APIs, legacy admin tools) are frequently under-tested.', u:'`waybackurls target.com | sort -u` then probe each with httpx for live 200s.', sev:'med'},
+      {t:'JavaScript file analysis', d:'Bundled JS often hard-codes API endpoints, internal hostnames, and sometimes API keys/secrets.', u:'Pull all `.js` files and run LinkFinder / grep for `api`, `/v1/`, `AKIA`, `secret`, `token=`.', sev:'high'},
+      {t:'GitHub / GitLab dorking', d:'Developers accidentally commit credentials, internal URLs, or config files to public repos.', u:'Search GitHub for `"target.com" password` or use TruffleHog against discovered org repos.', sev:'high'},
+      {t:'Default / framework-specific files', d:'Common leftover files expose config or debug info.', u:'Check for `/phpinfo.php`, `/.env`, `/.git/`, `/config.json`, `/.DS_Store`, `/web.config.bak`.', sev:'high'},
+      {t:'CMS-specific scanners', d:'Automated scanners map installed plugins/themes and known vulnerable versions.', u:'`wpscan --url https://target.com --enumerate vp,vt,u` for WordPress targets.', sev:'med'},
+      {t:'Document metadata (exiftool)', d:'PDFs/Office docs on the site can leak usernames, internal software versions, or file paths in metadata.', u:'`exiftool downloaded_report.pdf` — check Author, Producer, Company fields.', sev:'low'},
+    ]},
+  ]
+},
+{
+  id:'burp', name:'Burp Suite', num:'02',
+  sections:[
+    {name:'Repeater — Manual Manipulation', items:[
+      {t:'Host header injection', d:'Test if the app trusts the Host header for password-reset links, cache keys, or redirects.', u:'In Repeater, change `Host: target.com` to `Host: evil.com` on a password-reset request; if the emailed reset link points to evil.com, it\'s exploitable for account takeover.', sev:'high'},
+      {t:'X-Forwarded-Host / X-Forwarded-For spoofing', d:'Apps behind proxies sometimes trust these headers for IP-based access control or logging bypass.', u:'Add `X-Forwarded-For: 127.0.0.1` to bypass an IP allow-list check on an internal-only endpoint.', sev:'med'},
+      {t:'User-Agent based logic checks', d:'Some apps serve different behavior/security controls based on UA (e.g. skip bot protection, mobile-only APIs).', u:'Swap User-Agent to a known crawler string (Googlebot) and see if WAF rules or rate limits are relaxed.', sev:'med'},
+      {t:'HTTP method tampering (verb tampering)', d:'Changing the verb can bypass method-specific auth checks implemented only on GET or POST.', u:'If `POST /admin/deleteUser` is blocked, retry the same path with `GET`, `PUT`, `DELETE`, or a bogus verb like `POSTX` — some frameworks fail open.', sev:'high'},
+      {t:'Content-Type switching', d:'Changing Content-Type (JSON ↔ XML ↔ form) can route requests to a different parser with different validation.', u:'Send a JSON body but set `Content-Type: application/xml` — a mis-typed backend may parse XML and expose XXE.', sev:'high'},
+      {t:'Cookie / session token manipulation', d:'Check flags, predictability, and whether the server actually validates the session server-side.', u:'Strip `Secure`/`HttpOnly` in a test request, or flip a role value inside a JWT/cookie and resend.', sev:'high'},
+      {t:'CSRF token removal / reuse', d:'Confirms whether state-changing requests are actually protected.', u:'Resend a funds-transfer POST with the CSRF token field deleted, then again with a token from a different session.', sev:'high'},
+      {t:'Parameter pollution (HPP)', d:'Sending the same parameter twice can confuse the app or the WAF into using the wrong value.', u:'Send `?user=victim&user=attacker` and observe which value the backend actually applies.', sev:'med'},
+    ]},
+    {name:'Intruder & Automation', items:[
+      {t:'Intruder — brute force / fuzzing', d:'Automate credential stuffing, numeric ID enumeration, or payload fuzzing across a parameter.', u:'Sniper attack on `/login` with a common-password list; Cluster Bomb on `user`+`pass` pairs from a leaked combo list (only in-scope, rate-limited).', sev:'high'},
+      {t:'Autorize extension — authorization testing', d:'Automatically replays every request as a lower-privileged user to catch missing server-side authorization checks.', u:'Configure Autorize with a low-priv session cookie, browse as admin, and let it flag endpoints that return 200 instead of 403 for the low-priv session.', sev:'high'},
+      {t:'Param Miner extension', d:'Finds hidden/unlinked parameters and headers the backend silently respects (cache poisoning candidates).', u:'Run "Guess headers" on a cached page to find an unkeyed header usable for web cache poisoning.', sev:'high'},
+      {t:'Turbo Intruder — race conditions', d:'Fires many requests near-simultaneously to expose race conditions (double redemption of a coupon, multiple withdrawals).', u:'Script Turbo Intruder to send 20 concurrent "redeem coupon" requests and check if it\'s applied more than once.', sev:'high'},
+      {t:'Burp Collaborator — OOB / blind vulns', d:'Detects blind SSRF, blind XXE, and out-of-band DNS/HTTP interactions invisible in the direct response.', u:'Insert a Collaborator URL into an XML entity or a "webhook URL" field and watch for an inbound DNS/HTTP hit.', sev:'high'},
+    ]},
+    {name:'Analysis Tools', items:[
+      {t:'Sequencer — token randomness', d:'Statistically tests session tokens / reset tokens / CSRF tokens for predictability.', u:'Capture 100+ session tokens via Sequencer\'s live capture and check the entropy score before assuming tokens are unguessable.', sev:'med'},
+      {t:'Comparer — response diffing', d:'Diff two responses (e.g. valid vs invalid user login) to spot subtle differences enabling user enumeration.', u:'Compare the "wrong password" response for an existing vs non-existing username — a timing or byte-length diff confirms enumeration.', sev:'med'},
+      {t:'Decoder', d:'Quickly decode/encode Base64, URL, hex, HTML entities found in tokens or parameters during testing.', u:'Paste a captured `state=` OAuth parameter into Decoder to check if it\'s just Base64 JSON with a role/redirect embedded.', sev:'low'},
+      {t:'HTTP request smuggling checks (CL.TE / TE.CL)', d:'Front-end/back-end server disagreement on request boundaries can smuggle a second, attacker-controlled request.', u:'Use Burp\'s "HTTP Request Smuggler" extension to send a crafted `Content-Length`/`Transfer-Encoding` pair and observe desynced responses.', sev:'high'},
+      {t:'WebSocket message manipulation', d:'Intercept and replay WebSocket frames to test the same auth/authz issues real-time channels often skip.', u:'Open the WebSockets history tab, edit a chat/role message frame, and resend to see if server-side validation exists.', sev:'med'},
+      {t:'Match & Replace rules', d:'Globally rewrite a header/param on every request in-scope, useful for maintaining a spoofed header across a whole crawl.', u:'Set a rule to always replace `X-Forwarded-For` with an internal IP while spidering, to test IP-based access rules app-wide.', sev:'low'},
+    ]},
+  ]
+},
+{
+  id:'functions', name:'Functions', num:'03',
+  sections:[
+    {name:'Core Functional Flows', items:[
+      {t:'File upload functionality', d:'Test extension filtering, content-type checks, magic-byte validation, and storage location.', u:'Upload `shell.php.jpg`, rename to bypass extension filter, or use a polyglot GIF/PHP file; check if uploads are stored in a web-executable directory.', sev:'high'},
+      {t:'Search functionality', d:'Search boxes commonly forward input straight into a query or regex.', u:'Try `\' OR 1=1--` for SQLi, `<script>alert(1)<\/script>` for stored/reflected XSS, and a long repeated pattern for ReDoS.', sev:'high'},
+      {t:'Password reset flow', d:'Check token predictability, expiry, single-use enforcement, and whether the flow leaks account existence.', u:'Request two resets back-to-back and diff the tokens; try reusing an already-used token; try requesting reset for someone else\'s email and check response differences.', sev:'high'},
+      {t:'Registration / sign-up', d:'Look for mass assignment (setting `role:"admin"` in the request body) and email/OTP verification bypass.', u:'Add `"isAdmin":true` to the registration JSON body and see if the backend silently accepts it.', sev:'high'},
+      {t:'Login flow', d:'Test brute-force protection, username enumeration, and "remember me" token security.', u:'Compare error messages/timing for valid vs invalid usernames; check if a "remember me" cookie is a long-lived static value.', sev:'med'},
+      {t:'MFA / OTP verification step', d:'Confirm the OTP is actually checked server-side and can\'t be skipped by editing the response or the flow state.', u:'Intercept the "MFA required" response and change it to a success response client-side, or try navigating directly to the post-login page.', sev:'high'},
+      {t:'Payment / checkout logic', d:'Look for client-controlled prices, quantities, or currency, and IDOR on order/cart IDs.', u:'Modify the `price` or `amount` field in the checkout request, or set quantity to a negative number.', sev:'high'},
+      {t:'File download / export endpoints', d:'Path traversal or IDOR can expose other users\' files.', u:'Try `?file=../../etc/passwd` or increment a numeric `invoiceId` in the download URL to fetch someone else\'s invoice.', sev:'high'},
+      {t:'Comments / reviews / user-generated content', d:'Any field rendered back to other users is a stored-XSS candidate.', u:'Submit `<img src=x onerror=alert(document.cookie)>` as a comment and check if it executes for other viewers.', sev:'high'},
+      {t:'Import / export (CSV, Excel, XML)', d:'CSV formula injection and XXE via XML import are frequently missed.', u:'Export a field starting with `=cmd|\' /C calc\'!A0` to test CSV injection; upload a crafted XML with an external entity to test XXE.', sev:'high'},
+      {t:'Profile / account update', d:'Check for mass assignment on hidden fields like role, plan tier, or account balance.', u:'Add extra JSON keys (`"plan":"enterprise"`) to a normal profile-update PATCH request.', sev:'med'},
+      {t:'Multi-step forms / wizards', d:'Business logic can be bypassed by skipping steps or replaying an earlier step out of order.', u:'Call the final "confirm order" endpoint directly without completing the "verify address" step that precedes it in the UI.', sev:'med'},
+      {t:'Rate-limited actions (OTP resend, login attempts)', d:'Confirm limits are enforced server-side, not just in the UI.', u:'Script repeated requests to the OTP-resend endpoint bypassing the UI\'s disabled button/timer.', sev:'med'},
+      {t:'File preview / thumbnail generation', d:'Server-side image/document processing libraries can be vulnerable to SSRF or RCE.', u:'Upload an SVG containing an external entity reference or a crafted image designed to trigger a known ImageMagick/Ghostscript CVE.', sev:'high'},
+    ]},
+  ]
+},
+{
+  id:'all', name:'All Checks', num:'04',
+  sections:[
+    {name:'Authentication', items:[
+      {t:'Default / weak credentials', d:'Check admin panels and any exposed services for default vendor credentials.', u:'Try `admin/admin`, `admin/password` on any discovered login/admin panel before anything else.', sev:'med'},
+      {t:'Credential stuffing resistance', d:'Confirm lockout/rate limiting actually blocks large-scale automated login attempts.', u:'Run a small controlled batch of known-breached credentials through the login form (with authorization) to test lockout thresholds.', sev:'high'},
+      {t:'Session fixation', d:'Check whether the session ID is regenerated after login.', u:'Note the session cookie before login, log in, and confirm the cookie value changed; if unchanged, an attacker-supplied session can be fixated.', sev:'high'},
+      {t:'Session expiry & logout invalidation', d:'Ensure tokens are actually invalidated server-side on logout, not just cleared client-side.', u:'Log out, then replay a captured pre-logout request with the old token/cookie and check if it still succeeds.', sev:'high'},
+      {t:'Password policy & storage', d:'Weak complexity rules and reversible storage increase breach impact.', u:'Try setting a 1-character password; check if reset emails ever contain the plaintext password (would indicate insecure storage).', sev:'med'},
+      {t:'Account lockout / brute-force protection', d:'Confirm a lockout or exponential backoff exists and can\'t be bypassed via header spoofing.', u:'Trigger lockout, then retry with a spoofed `X-Forwarded-For` to see if the counter resets per apparent IP.', sev:'med'},
+    ]},
+    {name:'Authorization', items:[
+      {t:'IDOR — horizontal privilege escalation', d:'A user accessing another same-level user\'s data by changing an ID.', u:'Change `GET /api/orders/1001` (yours) to `/api/orders/1002` (someone else\'s) and see if it returns data.', sev:'high'},
+      {t:'Vertical privilege escalation', d:'A low-privileged user reaching admin-only functionality.', u:'As a standard user, directly call an admin endpoint like `/api/admin/users` discovered during recon.', sev:'high'},
+      {t:'Broken Object Level Authorization (BOLA) in APIs', d:'The classic top API vulnerability — object-level checks missing on REST/GraphQL endpoints.', u:'In a GraphQL API, query another user\'s object by ID in a field the UI never exposes directly.', sev:'high'},
+      {t:'Broken Function Level Authorization (BFLA)', d:'A UI hides an action, but the backend endpoint still allows any authenticated user to call it.', u:'Find the "delete user" endpoint used by the admin UI and call it directly with a regular user\'s token.', sev:'high'},
+      {t:'Forced browsing to unlinked admin pages', d:'Pages not linked in navigation are often left unauthenticated or under-protected.', u:'Try common admin paths found in recon (`/manage`, `/console`, `/internal`) directly in the browser as a low-priv or anonymous user.', sev:'high'},
+    ]},
+    {name:'JWT / JWE', items:[
+      {t:'alg:none attack', d:'Some libraries accept a token with `"alg":"none"` and no signature as valid.', u:'Edit the JWT header to `{"alg":"none"}`, strip the signature segment, and resend — check if it\'s accepted.', sev:'high'},
+      {t:'Weak signing secret (HS256 brute force)', d:'A short/guessable HMAC secret can be cracked offline, allowing full token forgery.', u:'Feed the token into `hashcat -m 16500 jwt.txt wordlist.txt` to attempt to recover the HS256 secret.', sev:'high'},
+      {t:'Algorithm confusion (RS256 → HS256)', d:'If the server accepts both algorithms, an attacker can sign a token with HS256 using the server\'s public RSA key as the HMAC secret.', u:'Re-sign a token as HS256 using the app\'s known public key as the secret and see if it\'s accepted as valid.', sev:'high'},
+      {t:'kid header injection', d:'The `kid` header sometimes drives a file path or DB lookup with no sanitization — SQLi/path traversal/SSRF vector.', u:'Set `kid` to `../../../../dev/null` or a SQLi payload and observe backend behavior/error responses.', sev:'high'},
+      {t:'jku / x5u header manipulation', d:'These headers tell the server where to fetch the verification key from; if trusted blindly, an attacker can point to their own key.', u:'Set `jku` to an attacker-controlled URL serving a JWKS with an attacker-generated key pair, then sign the token with that key.', sev:'high'},
+      {t:'Token expiry / replay', d:'Confirm expired or already-used tokens are actually rejected.', u:'Capture a token, wait past `exp`, and resend it to a protected endpoint.', sev:'med'},
+    ]},
+    {name:'Injection', items:[
+      {t:'SQL injection — error/union/blind', d:'Classic and still common; test every parameter, header, and cookie that touches a query.', u:'Try `\'` to trigger an error, then `\' UNION SELECT NULL,NULL-- -` to map column counts, then boolean/time-based payloads (`AND SLEEP(5)`) if no errors surface.', sev:'high'},
+      {t:'Second-order SQL injection', d:'Payload stored safely in one request but unsafely used later in a different query.', u:'Store a payload like `admin\'--` in a profile "display name" field, then trigger a report/export feature that reuses that stored value in a raw query.', sev:'high'},
+      {t:'NoSQL injection', d:'MongoDB-style operators (`$ne`, `$gt`) injected into JSON bodies can bypass auth checks.', u:'Send `{"username":"admin","password":{"$ne":null}}` to a login endpoint backed by MongoDB.', sev:'high'},
+      {t:'Command injection', d:'Inputs passed to shell commands (file conversion, ping tools, etc.) can execute arbitrary commands.', u:'On a "test connectivity" feature, submit `127.0.0.1; whoami` or `` `id` `` and watch for command output/behavioral change.', sev:'high'},
+      {t:'XXE (XML External Entity)', d:'XML parsers that resolve external entities can read local files or trigger SSRF.', u:'Upload/submit XML containing `<!ENTITY xxe SYSTEM "file:///etc/passwd">` and reference it in the body.', sev:'high'},
+    ]},
+    {name:'Rate Limiting & Abuse', items:[
+      {t:'Global rate-limit presence', d:'Confirm a baseline rate limit exists on sensitive endpoints (login, OTP, password reset, search).', u:'Send 50+ rapid requests to `/login` and check for 429s or increasing delays.', sev:'med'},
+      {t:'Rate-limit bypass via header spoofing', d:'Apps that key rate limits off client-supplied headers can be trivially bypassed.', u:'Rotate `X-Forwarded-For`/`X-Real-IP` values on each request to see if the limit resets per spoofed IP.', sev:'high'},
+      {t:'Rate-limit bypass via case/format variation', d:'Some WAF rules match paths or params case-sensitively or exactly.', u:'Try `/Login`, `/login/`, `/login?` or add a trailing null byte/extra param to slip past a naive rule.', sev:'med'},
+      {t:'Race condition abuse', d:'Concurrent requests can bypass logic that assumes sequential processing.', u:'Fire 10 simultaneous "apply discount code" requests via Turbo Intruder to see if a single-use code is applied multiple times.', sev:'high'},
+    ]},
+    {name:'Other Common Web Vulnerabilities', items:[
+      {t:'SSRF (Server-Side Request Forgery)', d:'Any feature that fetches a URL server-side (webhooks, PDF generators, "import from URL") is a candidate.', u:'Set a "fetch avatar from URL" field to `http://169.254.169.254/latest/meta-data/` to probe cloud metadata endpoints.', sev:'high'},
+      {t:'CSRF (Cross-Site Request Forgery)', d:'State-changing requests without a validated anti-CSRF token can be triggered from an attacker page.', u:'Build a minimal auto-submitting HTML form pointing at the target\'s "change email" endpoint and check if it succeeds while the victim is logged in.', sev:'high'},
+      {t:'CORS misconfiguration', d:'Overly permissive `Access-Control-Allow-Origin` (especially reflecting Origin + `Allow-Credentials: true`) can expose authenticated data cross-origin.', u:'Send `Origin: https://evil.com` and check if the response reflects it back with `Access-Control-Allow-Credentials: true`.', sev:'high'},
+      {t:'Clickjacking', d:'Missing `X-Frame-Options`/CSP frame-ancestors allows the page to be framed and interacted with invisibly.', u:'Embed the target login/action page in an `<iframe>` on a test page and see if it renders unprotected.', sev:'med'},
+      {t:'Open redirect', d:'Unvalidated redirect parameters can be used for phishing or to bypass OAuth redirect_uri checks.', u:'Change `?redirect=/dashboard` to `?redirect=https://evil.com` and confirm the app redirects there.', sev:'med'},
+      {t:'Security headers audit', d:'Check for CSP, HSTS, X-Content-Type-Options, Referrer-Policy presence and strength.', u:'Run `curl -I` and compare against OWASP Secure Headers baseline; missing CSP is a common finding worth flagging even without a live exploit.', sev:'low'},
+      {t:'Business logic abuse (misc.)', d:'Anything that lets a user get more value/access than intended by chaining legitimate features in an unintended order.', u:'E.g. add item to cart, apply a coupon, then remove/re-add the item to see if the discount persists incorrectly, or exploit inconsistent state across steps.', sev:'med'},
+    ]},
+  ]
+},
+];
+
+/* =========================================================
+   STATE
+========================================================= */
+let projects = [];
+let currentProjectId = null;
+let currentCat = 'recon';
+let currentFilter = 'all';
+let searchTerm = '';
+
+const STORAGE = window.storage;
+
+async function loadProjects(){
+  try{
+    const res = await STORAGE.get('projects-list');
+    projects = res ? JSON.parse(res.value) : [];
+  }catch(e){ projects = []; }
+  if(projects.length===0){
+    projects = [{id:'proj-'+Date.now(), name:'Project 1'}];
+    await saveProjects();
+  }
+  currentProjectId = projects[0].id;
+}
+async function saveProjects(){
+  try{ await STORAGE.set('projects-list', JSON.stringify(projects)); }catch(e){}
+}
+async function loadState(projectId){
+  try{
+    const res = await STORAGE.get('state:'+projectId);
+    return res ? JSON.parse(res.value) : {};
+  }catch(e){ return {}; }
+}
+async function saveState(projectId, state){
+  try{ await STORAGE.set('state:'+projectId, JSON.stringify(state)); }catch(e){}
+}
+
+let currentState = {};
+
+/* =========================================================
+   RENDER: PROJECT TABS
+========================================================= */
+function renderProjectTabs(){
+  const bar = document.getElementById('projectBar');
+  bar.innerHTML = '';
+  projects.forEach(p=>{
+    const tab = document.createElement('div');
+    tab.className = 'ptab' + (p.id===currentProjectId ? ' active':'');
+    tab.innerHTML = `<span class="pdot"></span><span class="pname">${escapeHtml(p.name)}</span><span class="del" data-id="${p.id}">✕</span>`;
+    tab.addEventListener('click',(e)=>{
+      if(e.target.classList.contains('del')){
+        e.stopPropagation();
+        deleteProject(p.id);
+        return;
+      }
+      switchProject(p.id);
+    });
+    bar.appendChild(tab);
+  });
+  const addBtn = document.createElement('button');
+  addBtn.className = 'addProjectBtn';
+  addBtn.textContent = '+ New engagement';
+  addBtn.addEventListener('click', addProject);
+  bar.appendChild(addBtn);
+}
+
+async function addProject(){
+  const name = prompt('Engagement / project name:', 'Project '+(projects.length+1));
+  if(!name) return;
+  const p = {id:'proj-'+Date.now(), name:name};
+  projects.push(p);
+  await saveProjects();
+  await switchProject(p.id);
+  renderProjectTabs();
+}
+async function deleteProject(id){
+  if(projects.length<=1){ alert('At least one project must remain.'); return; }
+  if(!confirm('Delete this project and its checklist progress?')) return;
+  projects = projects.filter(p=>p.id!==id);
+  await saveProjects();
+  try{ await STORAGE.delete('state:'+id); }catch(e){}
+  if(currentProjectId===id){ await switchProject(projects[0].id); }
+  renderProjectTabs();
+}
+async function switchProject(id){
+  currentProjectId = id;
+  currentState = await loadState(id);
+  renderProjectTabs();
+  renderAll();
+}
+
+/* =========================================================
+   RENDER: CATEGORY NAV
+========================================================= */
+function renderCatNav(){
+  const nav = document.getElementById('catNav');
+  nav.innerHTML = '';
+  CATEGORIES.forEach(cat=>{
+    const {done,total} = catProgress(cat);
+    const pct = total? Math.round(done/total*100):0;
+    const btn = document.createElement('div');
+    btn.className = 'catbtn' + (cat.id===currentCat?' active':'');
+    btn.innerHTML = `<div class="cnum">${cat.num}</div><div class="cname">${cat.name}</div>
+      <div class="cprog"><i style="width:${pct}%"></i></div>
+      <div class="cmeta">${done}/${total} cleared</div>`;
+    btn.addEventListener('click', ()=>{ currentCat = cat.id; renderAll(); });
+    nav.appendChild(btn);
+  });
+}
+
+function catProgress(cat){
+  let total=0, done=0;
+  cat.sections.forEach(sec=>sec.items.forEach(it=>{
+    total++;
+    const key = itemKey(cat.id, sec.name, it.t);
+    if(currentState[key] && currentState[key].checked) done++;
+  }));
+  return {done,total};
+}
+
+function itemKey(catId, secName, title){
+  return catId+'::'+secName+'::'+title;
+}
+
+/* =========================================================
+   RENDER: CONTENT (items for current category)
+========================================================= */
+function renderContent(){
+  const container = document.getElementById('content');
+  container.innerHTML = '';
+  const cat = CATEGORIES.find(c=>c.id===currentCat);
+  let anyVisible = false;
+
+  cat.sections.forEach(sec=>{
+    const visibleItems = sec.items.filter(it=>matchesFilter(cat.id, sec.name, it));
+    if(visibleItems.length===0) return;
+    anyVisible = true;
+    const secEl = document.createElement('div');
+    secEl.className = 'section';
+    const {done,total} = sectionProgress(cat.id, sec);
+    secEl.innerHTML = `<h2>${escapeHtml(sec.name)} <span class="tag">${done}/${total}</span></h2>`;
+    const list = document.createElement('div');
+    visibleItems.forEach(it=>{
+      list.appendChild(renderItem(cat.id, sec.name, it));
+    });
+    secEl.appendChild(list);
+    container.appendChild(secEl);
+  });
+
+  if(!anyVisible){
+    container.innerHTML = '<div class="emptystate">No checks match your filter/search.</div>';
+  }
+}
+
+function sectionProgress(catId, sec){
+  let total=0, done=0;
+  sec.items.forEach(it=>{
+    total++;
+    const key = itemKey(catId, sec.name, it.t);
+    if(currentState[key] && currentState[key].checked) done++;
+  });
+  return {done,total};
+}
+
+function matchesFilter(catId, secName, it){
+  const key = itemKey(catId, secName, it.t);
+  const checked = !!(currentState[key] && currentState[key].checked);
+  if(currentFilter==='open' && checked) return false;
+  if(currentFilter==='done' && !checked) return false;
+  if(searchTerm){
+    const hay = (it.t+' '+it.d+' '+it.u).toLowerCase();
+    if(!hay.includes(searchTerm.toLowerCase())) return false;
+  }
+  return true;
+}
+
+function renderItem(catId, secName, it){
+  const key = itemKey(catId, secName, it.t);
+  const st = currentState[key] || {checked:false, note:''};
+  const wrap = document.createElement('div');
+  wrap.className = 'item' + (st.checked?' done':'');
+  wrap.dataset.key = key;
+
+  const sevBadge = it.sev ? `<span class="badge sev-${it.sev}">${it.sev} sev</span>` : '';
+
+  wrap.innerHTML = `
+    <div class="item-head">
+      <input type="checkbox" class="chk" ${st.checked?'checked':''}>
+      <div class="item-title-wrap">
+        <div class="item-title">${escapeHtml(it.t)}</div>
+        <div class="item-desc">${escapeHtml(it.d)}</div>
+        <div class="item-badges">${sevBadge}</div>
+      </div>
+      <button class="expandBtn">▾</button>
+    </div>
+    <div class="item-body">
+      <div class="item-body-inner">
+        <span class="lbl">Use-case example</span>
+        <pre>${escapeHtml(it.u)}</pre>
+        <span class="lbl">Notes</span>
+        <textarea class="note" placeholder="Findings, evidence, request/response notes...">${escapeHtml(st.note||'')}</textarea>
+      </div>
+    </div>
+  `;
+
+  const chk = wrap.querySelector('.chk');
+  chk.addEventListener('change', async ()=>{
+    if(!currentState[key]) currentState[key] = {checked:false, note:''};
+    currentState[key].checked = chk.checked;
+    wrap.classList.toggle('done', chk.checked);
+    await saveState(currentProjectId, currentState);
+    renderCatNav();
+    renderGlobalBar();
+  });
+
+  const expandBtn = wrap.querySelector('.expandBtn');
+  const head = wrap.querySelector('.item-head');
+  const toggleOpen = (e)=>{
+    if(e.target.classList.contains('chk')) return;
+    wrap.classList.toggle('open');
+    expandBtn.textContent = wrap.classList.contains('open') ? '▴' : '▾';
+  };
+  head.addEventListener('click', toggleOpen);
+
+  const noteArea = wrap.querySelector('.note');
+  let noteTimer;
+  noteArea.addEventListener('click', e=>e.stopPropagation());
+  noteArea.addEventListener('input', ()=>{
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(async ()=>{
+      if(!currentState[key]) currentState[key] = {checked:false, note:''};
+      currentState[key].note = noteArea.value;
+      await saveState(currentProjectId, currentState);
+    }, 500);
+  });
+
+  return wrap;
+}
+
+/* =========================================================
+   GLOBAL PROGRESS BAR
+========================================================= */
+function renderGlobalBar(){
+  let total=0, done=0;
+  CATEGORIES.forEach(cat=>{
+    const p = catProgress(cat);
+    total += p.total; done += p.done;
+  });
+  const pct = total? Math.round(done/total*100):0;
+  document.getElementById('globalFill').style.width = pct+'%';
+  document.getElementById('globalCount').textContent = done+'/'+total;
+}
+
+/* =========================================================
+   HELPERS
+========================================================= */
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderAll(){
+  renderCatNav();
+  renderContent();
+  renderGlobalBar();
+}
+
+/* =========================================================
+   TOOLBAR EVENTS
+========================================================= */
+document.getElementById('searchBox').addEventListener('input', (e)=>{
+  searchTerm = e.target.value;
+  renderContent();
+});
+document.querySelectorAll('.filterchip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.filterchip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilter = chip.dataset.filter;
+    renderContent();
+  });
+});
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const proj = projects.find(p=>p.id===currentProjectId);
+  const exportObj = {project: proj, exportedAt: new Date().toISOString(), state: currentState};
+  const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (proj.name.replace(/\s+/g,'_')||'project') + '_checklist.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!confirm('Clear all checked items and notes for this category in the current project?')) return;
+  const cat = CATEGORIES.find(c=>c.id===currentCat);
+  cat.sections.forEach(sec=>sec.items.forEach(it=>{
+    const key = itemKey(cat.id, sec.name, it.t);
+    delete currentState[key];
+  }));
+  await saveState(currentProjectId, currentState);
+  renderAll();
+});
+
+/* =========================================================
+   INIT
+========================================================= */
+(async function init(){
+  await loadProjects();
+  currentState = await loadState(currentProjectId);
+  renderProjectTabs();
+  renderAll();
+})();
+</script>
+</body>
+</html>
