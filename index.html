@@ -216,6 +216,39 @@ footer.appfoot{text-align:center;color:var(--text-dim2);font-size:11px;margin-to
 .mtMap b{color:var(--text);}
 @media (max-width:600px){.mtGrid{grid-template-columns:1fr;}}
 
+/* ===== ADD CUSTOM TEST CASE MODAL + FORM ===== */
+.ctForm{display:flex;flex-direction:column;gap:14px;}
+.ctRow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.ctField{display:flex;flex-direction:column;gap:5px;}
+.ctField label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim2);}
+.ctField select,.ctField input[type=text],.ctField textarea{background:var(--bg);border:1px solid var(--line);color:var(--text);padding:9px 10px;border-radius:6px;font-family:var(--font-mono);font-size:12.5px;width:100%;}
+.ctField select:focus,.ctField input[type=text]:focus,.ctField textarea:focus{outline:none;border-color:var(--green-dim);}
+.ctField textarea{resize:vertical;min-height:60px;line-height:1.5;}
+.ctCheckRow{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim);}
+.ctCheckRow input{width:16px;height:16px;accent-color:var(--green);}
+.ctActions{display:flex;justify-content:flex-end;gap:10px;margin-top:4px;}
+.ctBtnPrimary{background:var(--green-dim);border:1px solid var(--green-dim);color:#03150a;font-family:var(--font-mono);font-weight:600;padding:10px 18px;border-radius:var(--radius);cursor:pointer;font-size:12.5px;}
+.ctBtnPrimary:hover{background:var(--green);}
+.ctBtnGhost{background:none;border:1px solid var(--line);color:var(--text-dim);padding:10px 16px;border-radius:var(--radius);cursor:pointer;font-size:12.5px;}
+.ctBtnGhost:hover{color:var(--text);border-color:var(--green-dim);}
+.ctError{color:var(--red);font-size:11.5px;display:none;}
+.ctError.show{display:block;}
+@media (max-width:600px){.ctRow{grid-template-columns:1fr;}}
+
+.section h3{gap:10px;}
+.section h3 .h3-left{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+.addTestBtn{flex:none;border:1px dashed var(--green-dim);background:none;color:var(--green-dim);font-family:var(--font-mono);font-size:10.5px;padding:5px 10px;border-radius:14px;cursor:pointer;letter-spacing:.03em;white-space:nowrap;}
+.addTestBtn:hover{color:var(--green-bright);border-color:var(--green-bright);border-style:solid;}
+
+.item.custom{border-color:var(--pink-dim);}
+.badge.custom{color:var(--pink);border-color:var(--pink-dim);}
+.deleteCustomBtn{flex:none;background:none;border:1px solid var(--line);color:var(--text-dim);border-radius:4px;width:26px;height:26px;cursor:pointer;font-size:12px;}
+.deleteCustomBtn:hover{color:var(--red);border-color:var(--red);}
+.item-custom-meta{font-size:10.5px;color:var(--text-dim2);margin-top:6px;}
+
+.sb-addTestBtn{margin:2px 14px 0;padding:9px 10px;border:1px solid var(--pink-dim);border-radius:8px;color:var(--pink);font-size:11.5px;cursor:pointer;text-align:center;background:var(--panel2);}
+.sb-addTestBtn:hover{background:var(--panel);}
+
 /* Mobile */
 @media (max-width:860px){
   .shell{flex-direction:column;}
@@ -264,6 +297,7 @@ footer.appfoot{text-align:center;color:var(--text-dim2);font-size:11px;margin-to
 
     <nav class="sb-nav" id="catNav"></nav>
 
+    <div class="sb-addTestBtn" id="sbAddTestBtn">✎ Log a Test Case You Performed</div>
     <div class="sb-methodBtn" id="methodBtn">ℹ Testing Types &amp; Methodology</div>
     <div class="sb-foot">Not a substitute for engagement scope &amp; rules of engagement. Data stays in this browser's storage.</div>
   </aside>
@@ -327,6 +361,73 @@ footer.appfoot{text-align:center;color:var(--text-dim2);font-size:11px;margin-to
     </div>
   </div>
 
+  <div class="modalOverlay" id="addTestModal">
+    <div class="modalBox">
+      <button class="modalClose" id="addTestClose">✕</button>
+      <h2>Log a Test Case You Performed</h2>
+      <div class="modalSub">Pick the exact test-case segment this belongs under, then describe what you did. It'll be added right into that section's checklist, alongside the built-in checks, for this engagement.</div>
+
+      <div class="ctForm">
+        <div class="ctRow">
+          <div class="ctField">
+            <label for="ctDomain">Module</label>
+            <select id="ctDomain"></select>
+          </div>
+          <div class="ctField">
+            <label for="ctCategory">Category</label>
+            <select id="ctCategory"></select>
+          </div>
+          <div class="ctField">
+            <label for="ctSection">Test case segment</label>
+            <select id="ctSection"></select>
+          </div>
+        </div>
+
+        <div class="ctField">
+          <label for="ctTitle">Test case title</label>
+          <input type="text" id="ctTitle" placeholder="e.g. Tested IDOR on /api/invoices/:id with adjacent low-priv token">
+        </div>
+
+        <div class="ctField">
+          <label for="ctDesc">What you did / how you tested it</label>
+          <textarea id="ctDesc" placeholder="Describe the request, payload, or steps you actually performed..."></textarea>
+        </div>
+
+        <div class="ctRow" style="grid-template-columns:1fr 1fr;">
+          <div class="ctField">
+            <label for="ctLevel">Level</label>
+            <select id="ctLevel">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate" selected>Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+          <div class="ctField">
+            <label for="ctMethod">Method (optional)</label>
+            <input type="text" id="ctMethod" placeholder="Manual / Automated / Burp / Frida...">
+          </div>
+        </div>
+
+        <div class="ctField">
+          <label for="ctNotes">Findings / evidence (optional)</label>
+          <textarea id="ctNotes" placeholder="Result, response snippet, or evidence notes..."></textarea>
+        </div>
+
+        <div class="ctCheckRow">
+          <input type="checkbox" id="ctChecked" checked>
+          <label for="ctChecked">Mark this test case as completed</label>
+        </div>
+
+        <div class="ctError" id="ctError">Please give the test case a title and a short description of what you did.</div>
+
+        <div class="ctActions">
+          <button class="ctBtnGhost" id="ctCancelBtn" type="button">Cancel</button>
+          <button class="ctBtnPrimary" id="ctSubmitBtn" type="button">+ Add Test Case</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <main class="main">
     <div class="topbar">
       <div class="catmeta">
@@ -350,6 +451,7 @@ footer.appfoot{text-align:center;color:var(--text-dim2);font-size:11px;margin-to
       <button class="filterchip active" data-filter="all">All status</button>
       <button class="filterchip" data-filter="open">Open</button>
       <button class="filterchip" data-filter="done">Done</button>
+      <button class="smallbtn" id="addTestGlobalBtn">✎ Log test case</button>
       <button class="smallbtn" id="exportBtn">⇩ Export JSON</button>
       <button class="smallbtn" id="resetBtn">⟲ Reset view</button>
     </div>
@@ -1196,12 +1298,14 @@ async function deleteProject(id){
   projects = projects.filter(p=>p.id!==id);
   await saveProjects();
   try{ await STORAGE.delete('state:'+id); }catch(e){}
+  try{ await STORAGE.delete('customitems:'+id); }catch(e){}
   if(currentProjectId===id){ await switchProject(projects[0].id); }
   else renderProjectList();
 }
 async function switchProject(id){
   currentProjectId = id;
   currentState = await loadState(id);
+  customItems = await loadCustomItems(id);
   renderProjectList();
   renderAll();
 }
@@ -1227,15 +1331,63 @@ function renderCatNav(){
 
 function catProgress(domainId, cat){
   let total=0, done=0;
-  cat.sections.forEach(sec=>sec.items.forEach(it=>{
-    if(currentLevel!=='all' && it.lvl!==currentLevel) return;
-    total++;
-    const key = itemKey(domainId, cat.id, sec.name, it.t);
-    if(currentState[key] && currentState[key].checked) done++;
-  }));
+  cat.sections.forEach(sec=>{
+    sec.items.forEach(it=>{
+      if(currentLevel!=='all' && it.lvl!==currentLevel) return;
+      total++;
+      const key = itemKey(domainId, cat.id, sec.name, it.t);
+      if(currentState[key] && currentState[key].checked) done++;
+    });
+    customItemsFor(domainId, cat.id, sec.name).forEach(c=>{
+      if(currentLevel!=='all' && c.lvl!==currentLevel) return;
+      total++;
+      const key = itemKey(domainId, cat.id, sec.name, null, c.id);
+      if(currentState[key] && currentState[key].checked) done++;
+    });
+  });
   return {done,total};
 }
-function itemKey(domainId, catId, secName, title){ return domainId+'::'+catId+'::'+secName+'::'+title; }
+function itemKey(domainId, catId, secName, title, customId){
+  if(customId) return 'custom::'+customId;
+  return domainId+'::'+catId+'::'+secName+'::'+title;
+}
+
+/* =========================================================
+   CUSTOM (USER-LOGGED) TEST CASES
+========================================================= */
+let customItems = [];
+async function loadCustomItems(projectId){
+  try{ const res = await STORAGE.get('customitems:'+projectId); return res ? JSON.parse(res.value) : []; }catch(e){ return []; }
+}
+async function saveCustomItems(projectId, items){ try{ await STORAGE.set('customitems:'+projectId, JSON.stringify(items)); }catch(e){} }
+
+function customItemsFor(domainId, catId, secName){
+  return customItems.filter(c=>c.domainId===domainId && c.catId===catId && c.secName===secName);
+}
+function customToItem(c){
+  return {t:c.t, d:c.d, lvl:c.lvl, method:c.method||'', custom:true, id:c.id, addedAt:c.addedAt};
+}
+function matchesCustomFilter(domainId, catId, secName, c){
+  if(currentLevel!=='all' && c.lvl!==currentLevel) return false;
+  const key = itemKey(domainId, catId, secName, null, c.id);
+  const checked = !!(currentState[key] && currentState[key].checked);
+  if(currentFilter==='open' && checked) return false;
+  if(currentFilter==='done' && !checked) return false;
+  if(searchTerm){
+    const note = (currentState[key] && currentState[key].note) || '';
+    const hay = (c.t+' '+c.d+' '+(c.method||'')+' '+c.lvl+' '+note).toLowerCase();
+    if(!hay.includes(searchTerm.toLowerCase())) return false;
+  }
+  return true;
+}
+async function removeCustomItem(id){
+  if(!confirm('Remove this logged test case? This cannot be undone.')) return;
+  customItems = customItems.filter(c=>c.id!==id);
+  await saveCustomItems(currentProjectId, customItems);
+  delete currentState['custom::'+id];
+  await saveState(currentProjectId, currentState);
+  renderAll();
+}
 
 /* =========================================================
    LEVEL COUNTS (across whole checklist, for the level bar)
@@ -1246,6 +1398,10 @@ function levelCounts(){
     counts.all++;
     counts[it.lvl] = (counts[it.lvl]||0)+1;
   })));
+  customItems.filter(c=>c.domainId===currentDomain).forEach(c=>{
+    counts.all++;
+    counts[c.lvl] = (counts[c.lvl]||0)+1;
+  });
   return counts;
 }
 function renderLevelCounts(){
@@ -1275,15 +1431,19 @@ function renderContent(){
 
   cat.sections.forEach(sec=>{
     const visibleItems = sec.items.filter(it=>matchesFilter(currentDomain, cat.id, sec.name, it));
-    if(visibleItems.length===0) return;
+    const visibleCustom = customItemsFor(currentDomain, cat.id, sec.name).filter(c=>matchesCustomFilter(currentDomain, cat.id, sec.name, c));
+    if(visibleItems.length===0 && visibleCustom.length===0) return;
     anyVisible = true;
     const secEl = document.createElement('div');
     secEl.className = 'section';
     const {done,total} = sectionProgress(currentDomain, cat.id, sec);
-    secEl.innerHTML = `<h3>${escapeHtml(sec.name)} <span class="tag">${done}/${total}</span></h3>`;
+    secEl.innerHTML = `<h3><span class="h3-left">${escapeHtml(sec.name)} <span class="tag">${done}/${total}</span></span><button class="addTestBtn" type="button">+ Add test case</button></h3>`;
     const list = document.createElement('div');
     visibleItems.forEach(it=> list.appendChild(renderItem(currentDomain, cat.id, sec.name, it)) );
+    visibleCustom.forEach(c=> list.appendChild(renderItem(currentDomain, cat.id, sec.name, customToItem(c))) );
     secEl.appendChild(list);
+    const addBtn = secEl.querySelector('.addTestBtn');
+    addBtn.addEventListener('click', ()=> openAddTestModal(currentDomain, cat.id, sec.name));
     container.appendChild(secEl);
   });
 
@@ -1298,6 +1458,12 @@ function sectionProgress(domainId, catId, sec){
     if(currentLevel!=='all' && it.lvl!==currentLevel) return;
     total++;
     const key = itemKey(domainId, catId, sec.name, it.t);
+    if(currentState[key] && currentState[key].checked) done++;
+  });
+  customItemsFor(domainId, catId, sec.name).forEach(c=>{
+    if(currentLevel!=='all' && c.lvl!==currentLevel) return;
+    total++;
+    const key = itemKey(domainId, catId, sec.name, null, c.id);
     if(currentState[key] && currentState[key].checked) done++;
   });
   return {done,total};
@@ -1318,14 +1484,16 @@ function matchesFilter(domainId, catId, secName, it){
 }
 
 function renderItem(domainId, catId, secName, it){
-  const key = itemKey(domainId, catId, secName, it.t);
+  const key = it.custom ? itemKey(domainId, catId, secName, null, it.id) : itemKey(domainId, catId, secName, it.t);
   const st = currentState[key] || {checked:false, note:''};
   const wrap = document.createElement('div');
-  wrap.className = 'item' + (st.checked?' done':'');
+  wrap.className = 'item' + (st.checked?' done':'') + (it.custom?' custom':'');
   wrap.dataset.key = key;
 
   let bodyHtml = '';
-  if(it.examples){
+  if(it.custom){
+    bodyHtml = `<div class="item-custom-meta">✎ Logged by you${it.addedAt ? ' · '+new Date(it.addedAt).toLocaleDateString() : ''}</div>`;
+  } else if(it.examples){
     bodyHtml = it.examples.map((ex,i)=>`<span class="lbl">Example ${i+1}</span><pre>${escapeHtml(ex)}</pre>`).join('');
   } else if(it.steps){
     bodyHtml = `<span class="lbl">Chain steps</span><ol class="stepList">${it.steps.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ol>`;
@@ -1350,9 +1518,10 @@ function renderItem(domainId, catId, secName, it){
       <div class="item-title-wrap">
         <div class="item-title">${escapeHtml(it.t)}</div>
         <div class="item-desc">${escapeHtml(it.d)}</div>
-        <div class="item-badges"><span class="badge lvl-${it.lvl}">${it.lvl}</span>${it.method?`<span class="badge method">${escapeHtml(it.method)}</span>`:''}${it.impact?`<span class="badge impact-${it.impact.toLowerCase()}">${escapeHtml(it.impact)} impact</span>`:''}</div>
+        <div class="item-badges"><span class="badge lvl-${it.lvl}">${it.lvl}</span>${it.method?`<span class="badge method">${escapeHtml(it.method)}</span>`:''}${it.impact?`<span class="badge impact-${it.impact.toLowerCase()}">${escapeHtml(it.impact)} impact</span>`:''}${it.custom?`<span class="badge custom">Logged by you</span>`:''}</div>
       </div>
       ${it.variants && it.variants.length ? `<button class="variantsBtn" type="button">⛭ ${it.variants.length} variants ▸</button>` : ''}
+      ${it.custom ? `<button class="deleteCustomBtn" type="button" title="Remove this logged test case">🗑</button>` : ''}
       <button class="expandBtn">▾</button>
     </div>
     <div class="item-body">
@@ -1380,9 +1549,18 @@ function renderItem(domainId, catId, secName, it){
   head.addEventListener('click', (e)=>{
     if(e.target.classList.contains('chk')) return;
     if(e.target.closest('.variantsBtn')) return;
+    if(e.target.closest('.deleteCustomBtn')) return;
     wrap.classList.toggle('open');
     expandBtn.textContent = wrap.classList.contains('open') ? '▴' : '▾';
   });
+
+  const deleteBtn = wrap.querySelector('.deleteCustomBtn');
+  if(deleteBtn){
+    deleteBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      removeCustomItem(it.id);
+    });
+  }
 
   const variantsBtn = wrap.querySelector('.variantsBtn');
   if(variantsBtn){
@@ -1462,7 +1640,7 @@ document.querySelectorAll('.filterchip').forEach(chip=>{
 });
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const proj = projects.find(p=>p.id===currentProjectId);
-  const exportObj = {project: proj, exportedAt: new Date().toISOString(), state: currentState};
+  const exportObj = {project: proj, exportedAt: new Date().toISOString(), state: currentState, customTestCases: customItems};
   const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1472,13 +1650,122 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   URL.revokeObjectURL(url);
 });
 document.getElementById('resetBtn').addEventListener('click', async ()=>{
-  if(!confirm('Clear all checked items and notes for this category in the current project?')) return;
+  if(!confirm('Clear all checked items and notes for this category in the current project? (Any test cases you logged will stay, just unchecked.)')) return;
   const cat = CATEGORIES.find(c=>c.id===currentCat);
-  cat.sections.forEach(sec=>sec.items.forEach(it=>{
-    const key = itemKey(currentDomain, cat.id, sec.name, it.t);
-    delete currentState[key];
-  }));
+  cat.sections.forEach(sec=>{
+    sec.items.forEach(it=>{
+      const key = itemKey(currentDomain, cat.id, sec.name, it.t);
+      delete currentState[key];
+    });
+    customItemsFor(currentDomain, cat.id, sec.name).forEach(c=>{
+      const key = itemKey(currentDomain, cat.id, sec.name, null, c.id);
+      delete currentState[key];
+    });
+  });
   await saveState(currentProjectId, currentState);
+  renderAll();
+});
+
+/* =========================================================
+   ADD CUSTOM TEST CASE MODAL
+========================================================= */
+const ctDomainSel = document.getElementById('ctDomain');
+const ctCategorySel = document.getElementById('ctCategory');
+const ctSectionSel = document.getElementById('ctSection');
+
+function populateCtDomains(selectedId){
+  ctDomainSel.innerHTML = DOMAINS.map(d=>`<option value="${d.id}">${d.icon} ${escapeHtml(d.name)}</option>`).join('');
+  ctDomainSel.value = selectedId;
+}
+function populateCtCategories(domainId, selectedId){
+  const dom = DOMAINS.find(d=>d.id===domainId);
+  ctCategorySel.innerHTML = dom.categories.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  ctCategorySel.value = selectedId && dom.categories.some(c=>c.id===selectedId) ? selectedId : dom.categories[0].id;
+}
+function populateCtSections(domainId, catId, selectedName){
+  const dom = DOMAINS.find(d=>d.id===domainId);
+  const cat = dom.categories.find(c=>c.id===catId);
+  ctSectionSel.innerHTML = cat.sections.map(s=>`<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('');
+  const names = cat.sections.map(s=>s.name);
+  ctSectionSel.value = selectedName && names.includes(selectedName) ? selectedName : cat.sections[0].name;
+}
+
+ctDomainSel.addEventListener('change', ()=>{
+  populateCtCategories(ctDomainSel.value);
+  populateCtSections(ctDomainSel.value, ctCategorySel.value);
+});
+ctCategorySel.addEventListener('change', ()=>{
+  populateCtSections(ctDomainSel.value, ctCategorySel.value);
+});
+
+function openAddTestModal(domainId, catId, secName){
+  populateCtDomains(domainId);
+  populateCtCategories(domainId, catId);
+  populateCtSections(domainId, catId, secName);
+  document.getElementById('ctTitle').value = '';
+  document.getElementById('ctDesc').value = '';
+  document.getElementById('ctMethod').value = '';
+  document.getElementById('ctNotes').value = '';
+  document.getElementById('ctLevel').value = 'intermediate';
+  document.getElementById('ctChecked').checked = true;
+  document.getElementById('ctError').classList.remove('show');
+  document.getElementById('addTestModal').classList.add('open');
+}
+function closeAddTestModal(){
+  document.getElementById('addTestModal').classList.remove('open');
+}
+document.getElementById('addTestClose').addEventListener('click', closeAddTestModal);
+document.getElementById('ctCancelBtn').addEventListener('click', closeAddTestModal);
+document.getElementById('addTestModal').addEventListener('click', (e)=>{
+  if(e.target.id==='addTestModal') closeAddTestModal();
+});
+document.getElementById('addTestGlobalBtn').addEventListener('click', ()=>{
+  const cat = CATEGORIES.find(c=>c.id===currentCat);
+  openAddTestModal(currentDomain, currentCat, cat.sections[0].name);
+});
+document.getElementById('sbAddTestBtn').addEventListener('click', ()=>{
+  const cat = CATEGORIES.find(c=>c.id===currentCat);
+  openAddTestModal(currentDomain, currentCat, cat.sections[0].name);
+});
+
+document.getElementById('ctSubmitBtn').addEventListener('click', async ()=>{
+  const title = document.getElementById('ctTitle').value.trim();
+  const desc = document.getElementById('ctDesc').value.trim();
+  const errEl = document.getElementById('ctError');
+  if(!title || !desc){
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+
+  const domainId = ctDomainSel.value;
+  const catId = ctCategorySel.value;
+  const secName = ctSectionSel.value;
+  const level = document.getElementById('ctLevel').value;
+  const method = document.getElementById('ctMethod').value.trim();
+  const notes = document.getElementById('ctNotes').value.trim();
+  const checked = document.getElementById('ctChecked').checked;
+
+  const item = {
+    id: 'custom-' + Date.now() + '-' + Math.random().toString(36).slice(2,8),
+    domainId, catId, secName,
+    t: title, d: desc, lvl: level, method: method,
+    addedAt: Date.now()
+  };
+  customItems.push(item);
+  await saveCustomItems(currentProjectId, customItems);
+
+  const key = itemKey(domainId, catId, secName, null, item.id);
+  currentState[key] = {checked: checked, note: notes};
+  await saveState(currentProjectId, currentState);
+
+  closeAddTestModal();
+
+  if(domainId !== currentDomain){
+    switchDomain(domainId);
+  }
+  currentCat = catId;
+  catByDomain[domainId] = catId;
   renderAll();
 });
 
@@ -1488,6 +1775,7 @@ document.getElementById('resetBtn').addEventListener('click', async ()=>{
 (async function init(){
   await loadProjects();
   currentState = await loadState(currentProjectId);
+  customItems = await loadCustomItems(currentProjectId);
   renderProjectList();
   renderDomainTabs();
   renderAll();
